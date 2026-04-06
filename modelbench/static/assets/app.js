@@ -1,17 +1,19 @@
 const state = {
   models: [],
+  selectedModelIds: [],
   datasets: [],
   datasetImages: [],
-  detections: [],
+  resultsByModel: {},
   imageSize: null,
   activeDatasetId: null,
   activeImageId: null,
-  activeDetectionId: null,
+  activeDisplayModelId: null,
+  activeDetectionIndex: 0,
   activePreviewUrl: null,
   groundTruth: null,
 };
 
-const modelSelect = document.getElementById("modelSelect");
+const modelList = document.getElementById("modelList");
 const modelDescription = document.getElementById("modelDescription");
 const datasetCards = document.getElementById("datasetCards");
 const datasetStatus = document.getElementById("datasetStatus");
@@ -31,6 +33,41 @@ const reloadDatasets = document.getElementById("reloadDatasets");
 const datasetCardTemplate = document.getElementById("datasetCardTemplate");
 const imageTileTemplate = document.getElementById("imageTileTemplate");
 const detectionCardTemplate = document.getElementById("detectionCardTemplate");
+
+function getSelectedModels() {
+  return state.models.filter((model) => state.selectedModelIds.includes(model.id));
+}
+
+function getActiveDisplayModel() {
+  if (state.activeDisplayModelId && state.selectedModelIds.includes(state.activeDisplayModelId)) {
+    return state.models.find((model) => model.id === state.activeDisplayModelId) || null;
+  }
+  return getSelectedModels()[0] || null;
+}
+
+function getActiveImageRecord() {
+  return state.datasetImages.find((item) => item.id === state.activeImageId) || null;
+}
+
+function getResultForModel(modelId) {
+  return state.resultsByModel[modelId] || null;
+}
+
+function getDetectionForModel(modelId) {
+  const result = getResultForModel(modelId);
+  if (!result || !result.detections || !result.detections.length) {
+    return null;
+  }
+  return result.detections[state.activeDetectionIndex] || result.detections[0];
+}
+
+function getDisplayResult() {
+  const activeModel = getActiveDisplayModel();
+  if (!activeModel) {
+    return null;
+  }
+  return getResultForModel(activeModel.id);
+}
 
 function setStatus(label, busy = false) {
   statusPill.textContent = label;
@@ -61,31 +98,122 @@ function setPreview(url, title, subtitle) {
   previewSubtitle.textContent = subtitle;
 }
 
+function syncPreviewSubtitle() {
+  const imageRecord = getActiveImageRecord();
+  const activeModel = getActiveDisplayModel();
+  const selectedModels = getSelectedModels();
+  if (!imageRecord) {
+    previewSubtitle.textContent = "Select a dataset image to run inference.";
+    return;
+  }
+
+  const parts = [
+    state.activeDatasetId,
+    `${selectedModels.length} model${selectedModels.length === 1 ? "" : "s"} selected`,
+  ];
+  if (activeModel) {
+    parts.push(`overlay: ${activeModel.label}`);
+  }
+  previewSubtitle.textContent = parts.join(" • ");
+}
+
+function syncModelDescription() {
+  const selectedModels = getSelectedModels();
+  const activeModel = getActiveDisplayModel();
+
+  if (!selectedModels.length) {
+    modelDescription.textContent = "Select at least one model.";
+    return;
+  }
+
+  const selectedSummary = selectedModels.map((model) => model.label).join(", ");
+  const overlaySummary = activeModel ? `Viewing inference: ${activeModel.label}.` : "";
+  modelDescription.textContent = `${selectedSummary}. ${overlaySummary} Click any inference card to switch the preview overlay and active model focus.`;
+}
+
+function formatPredictionAge(detection, ageKind) {
+  if (!detection) {
+    return "No detected face";
+  }
+  if (ageKind === "bucket") {
+    return `${detection.age_years} years (${detection.age_bucket})`;
+  }
+  return `${detection.age_years} years`;
+}
+
+function renderModelList() {
+  modelList.innerHTML = "";
+
+  state.models.forEach((model) => {
+    const option = document.createElement("label");
+    option.className = "model-option";
+    option.dataset.modelId = model.id;
+
+    const checkbox = document.createElement("input");
+    checkbox.type = "checkbox";
+    checkbox.value = model.id;
+    checkbox.checked = state.selectedModelIds.includes(model.id);
+    checkbox.addEventListener("change", async (event) => {
+      const { checked } = event.target;
+      if (!checked && state.selectedModelIds.length === 1) {
+        event.target.checked = true;
+        return;
+      }
+
+      if (checked) {
+        state.selectedModelIds = [...state.selectedModelIds, model.id];
+      } else {
+        state.selectedModelIds = state.selectedModelIds.filter((id) => id !== model.id);
+        delete state.resultsByModel[model.id];
+        if (state.activeDisplayModelId === model.id) {
+          state.activeDisplayModelId = state.selectedModelIds[0] || null;
+          state.activeDetectionIndex = 0;
+        }
+      }
+
+      renderModelList();
+      syncModelDescription();
+      syncPreviewSubtitle();
+      renderDetectionList();
+      renderComparison();
+      drawOverlay();
+
+      const imageRecord = getActiveImageRecord();
+      if (imageRecord) {
+        await analyzeDatasetImage(imageRecord);
+      }
+    });
+
+    const content = document.createElement("div");
+    content.className = "model-option-copy";
+
+    const title = document.createElement("div");
+    title.className = "model-option-title";
+    title.textContent = model.label;
+
+    const meta = document.createElement("div");
+    meta.className = "model-option-meta";
+    meta.textContent = model.description;
+
+    content.append(title, meta);
+    option.append(checkbox, content);
+    option.classList.toggle("active", checkbox.checked);
+    modelList.appendChild(option);
+  });
+}
+
 async function loadModels() {
   const response = await fetch("/api/models");
   if (!response.ok) {
     throw new Error("Unable to load model presets.");
   }
+
   const payload = await response.json();
   state.models = payload.models;
-
-  modelSelect.innerHTML = "";
-  state.models.forEach((model, index) => {
-    const option = document.createElement("option");
-    option.value = model.id;
-    option.textContent = model.label;
-    if (index === 0) {
-      option.selected = true;
-    }
-    modelSelect.appendChild(option);
-  });
-
+  state.selectedModelIds = state.models.slice(0, 1).map((model) => model.id);
+  state.activeDisplayModelId = state.selectedModelIds[0] || null;
+  renderModelList();
   syncModelDescription();
-}
-
-function syncModelDescription() {
-  const active = state.models.find((model) => model.id === modelSelect.value);
-  modelDescription.textContent = active ? active.description : "";
 }
 
 async function loadDatasets() {
@@ -118,13 +246,17 @@ function renderDatasetCards() {
   });
 }
 
-async function selectDataset(datasetId) {
-  state.activeDatasetId = datasetId;
+function resetAnalysisState() {
   state.activeImageId = null;
-  state.activeDetectionId = null;
-  state.detections = [];
+  state.activeDetectionIndex = 0;
+  state.resultsByModel = {};
   state.groundTruth = null;
   state.imageSize = null;
+}
+
+async function selectDataset(datasetId) {
+  state.activeDatasetId = datasetId;
+  resetAnalysisState();
   renderDatasetCards();
   renderDetectionList();
   renderComparison();
@@ -139,6 +271,7 @@ async function selectDataset(datasetId) {
   state.datasetImages = payload.images;
   datasetStatus.textContent = `${state.datasetImages.length} local images loaded. Scroll and select one to test.`;
   renderImageBrowser();
+  syncPreviewSubtitle();
 }
 
 function renderImageBrowser() {
@@ -161,76 +294,174 @@ function renderImageBrowser() {
   });
 }
 
+async function fetchModelAnalysis(imageRecord, model) {
+  const formData = new FormData();
+  formData.append("dataset_image_id", imageRecord.id);
+  formData.append("model_id", model.id);
+
+  const response = await fetch("/api/analyze", {
+    method: "POST",
+    body: formData,
+  });
+  const payload = await response.json();
+  if (!response.ok) {
+    throw new Error(payload.detail || "Inference failed.");
+  }
+  return payload;
+}
+
 async function analyzeDatasetImage(imageRecord) {
+  const selectedModels = getSelectedModels();
+  if (!selectedModels.length) {
+    setWarnings(["Select at least one model."]);
+    return;
+  }
+
   state.activeImageId = imageRecord.id;
-  state.activeDetectionId = null;
+  state.activeDetectionIndex = 0;
   renderImageBrowser();
 
   setStatus("Running", true);
   setWarnings([]);
-  setPreview(imageRecord.image_url, imageRecord.label_summary, `${state.activeDatasetId} • ${modelSelect.value}`);
+  setPreview(imageRecord.image_url, imageRecord.label_summary, "");
+  syncPreviewSubtitle();
 
-  const formData = new FormData();
-  formData.append("dataset_image_id", imageRecord.id);
-  formData.append("model_id", modelSelect.value);
+  const resultEntries = await Promise.all(
+    selectedModels.map(async (model) => {
+      try {
+        const payload = await fetchModelAnalysis(imageRecord, model);
+        return { model, payload, error: null };
+      } catch (error) {
+        return { model, payload: null, error };
+      }
+    })
+  );
 
-  try {
-    const response = await fetch("/api/analyze", {
-      method: "POST",
-      body: formData,
-    });
-    const payload = await response.json();
-    if (!response.ok) {
-      throw new Error(payload.detail || "Inference failed.");
+  const nextResults = {};
+  const warnings = [];
+  let firstPayload = null;
+
+  resultEntries.forEach(({ model, payload, error }) => {
+    if (error) {
+      nextResults[model.id] = {
+        model,
+        detections: [],
+        warnings: [error.message],
+        error: error.message,
+      };
+      warnings.push(`${model.label}: ${error.message}`);
+      return;
     }
 
-    state.imageSize = payload.image;
-    state.detections = payload.detections;
-    state.groundTruth = payload.ground_truth;
-    state.activeDetectionId = payload.detections.length ? payload.detections[0].id : null;
-    setWarnings(payload.warnings);
-    renderDetectionList();
-    renderComparison();
-    drawOverlay();
-    setStatus("Ready");
-  } catch (error) {
-    state.detections = [];
-    state.groundTruth = null;
-    state.imageSize = null;
-    state.activeDetectionId = null;
-    renderDetectionList();
-    renderComparison(error.message);
-    drawOverlay();
-    setWarnings([error.message]);
-    setStatus("Error");
-  }
-}
+    if (!firstPayload) {
+      firstPayload = payload;
+    }
 
-function getActiveDetection() {
-  return state.detections.find((item) => item.id === state.activeDetectionId) || null;
+    nextResults[model.id] = {
+      model: payload.model,
+      detections: payload.detections,
+      warnings: payload.warnings,
+      error: null,
+    };
+
+    payload.warnings.forEach((warning) => {
+      warnings.push(`${payload.model.label}: ${warning}`);
+    });
+  });
+
+  state.resultsByModel = nextResults;
+  state.groundTruth = firstPayload ? firstPayload.ground_truth : null;
+  state.imageSize = firstPayload ? firstPayload.image : null;
+
+  if (!state.activeDisplayModelId || !state.selectedModelIds.includes(state.activeDisplayModelId)) {
+    state.activeDisplayModelId = selectedModels[0].id;
+  }
+
+  const activeResult = getDisplayResult();
+  if (!activeResult || !activeResult.detections.length) {
+    const firstWithDetection = selectedModels.find((model) => {
+      const result = nextResults[model.id];
+      return result && result.detections && result.detections.length;
+    });
+    if (firstWithDetection) {
+      state.activeDisplayModelId = firstWithDetection.id;
+    }
+  }
+
+  setWarnings(warnings);
+  renderDetectionList();
+  renderComparison();
+  drawOverlay();
+  setStatus("Ready");
+  syncModelDescription();
+  syncPreviewSubtitle();
 }
 
 function renderDetectionList() {
   detectionList.innerHTML = "";
 
-  if (!state.detections.length) {
-    detectionsSummary.textContent = "No detections yet.";
-    detectionList.innerHTML = `<p class="empty-inline">Select an image to inspect detected faces.</p>`;
+  const activeModel = getActiveDisplayModel();
+  const selectedModels = getSelectedModels();
+
+  if (!selectedModels.length) {
+    detectionsSummary.textContent = "No model selected.";
+    detectionList.innerHTML = `<p class="empty-inline">Select at least one model to inspect detections.</p>`;
     return;
   }
 
-  detectionsSummary.textContent = `${state.detections.length} face${state.detections.length === 1 ? "" : "s"} detected`;
-  state.detections.forEach((detection) => {
+  const detectionCards = [];
+  const emptyModels = [];
+
+  selectedModels.forEach((model) => {
+    const result = getResultForModel(model.id);
+    if (!result || result.error || !result.detections || !result.detections.length) {
+      emptyModels.push(model.label);
+      return;
+    }
+
+    result.detections.forEach((detection, index) => {
+      detectionCards.push({
+        model,
+        detection,
+        index,
+        isActive: state.activeDisplayModelId === model.id && state.activeDetectionIndex === index,
+      });
+    });
+  });
+
+  if (!detectionCards.length) {
+    detectionsSummary.textContent = activeModel ? `Showing ${activeModel.label}` : "No detections yet.";
+    detectionList.innerHTML = `<p class="empty-inline">No detected faces available for the selected models.</p>`;
+    return;
+  }
+
+  const summaryParts = [
+    `${detectionCards.length} face card${detectionCards.length === 1 ? "" : "s"} across ${selectedModels.length} model${selectedModels.length === 1 ? "" : "s"}`,
+  ];
+  if (activeModel) {
+    summaryParts.push(`showing ${activeModel.label}`);
+  }
+  if (emptyModels.length) {
+    summaryParts.push(`no faces: ${emptyModels.join(", ")}`);
+  }
+  detectionsSummary.textContent = summaryParts.join(" • ");
+
+  detectionCards.forEach(({ model, detection, index, isActive }) => {
     const node = detectionCardTemplate.content.firstElementChild.cloneNode(true);
-    node.dataset.detectionId = detection.id;
+    node.dataset.modelId = model.id;
+    node.dataset.detectionIndex = String(index);
     node.querySelector(".detection-thumb").src = detection.face_thumbnail_url;
-    node.querySelector(".detection-thumb").alt = detection.label;
-    node.querySelector(".detection-name").textContent = detection.label;
-    node.querySelector(".confidence-chip").textContent = `${Math.round(detection.face_confidence * 100)}%`;
+    node.querySelector(".detection-thumb").alt = `${model.label} ${detection.label}`;
+    node.querySelector(".detection-name").textContent = `${model.label} | ${detection.label}`;
+    node.querySelector(".confidence-chip").textContent =
+      detection.face_confidence == null ? "n/a" : `${Math.round(detection.face_confidence * 100)}%`;
     node.querySelector(".detection-meta").textContent = `${detection.age_years} years • ${detection.gender_label}`;
-    node.classList.toggle("active", detection.id === state.activeDetectionId);
+    node.classList.toggle("active", isActive);
     node.addEventListener("click", () => {
-      state.activeDetectionId = detection.id;
+      state.activeDisplayModelId = model.id;
+      state.activeDetectionIndex = index;
+      syncModelDescription();
+      syncPreviewSubtitle();
       renderDetectionList();
       renderComparison();
       drawOverlay();
@@ -240,7 +471,8 @@ function renderDetectionList() {
 }
 
 function renderComparison(errorMessage = null) {
-  const detection = getActiveDetection();
+  const selectedModels = getSelectedModels();
+  const activeDisplayModel = getActiveDisplayModel();
 
   if (errorMessage) {
     comparisonNote.textContent = "Comparison unavailable.";
@@ -250,7 +482,7 @@ function renderComparison(errorMessage = null) {
   }
 
   if (!state.groundTruth) {
-    comparisonNote.textContent = "Ground truth and predictions appear here.";
+    comparisonNote.textContent = "Ground truth and selected model predictions appear here.";
     comparisonView.className = "comparison-view empty-detail";
     comparisonView.textContent = "No dataset image selected.";
     return;
@@ -258,20 +490,51 @@ function renderComparison(errorMessage = null) {
 
   comparisonNote.textContent =
     state.groundTruth.age_kind === "bucket"
-      ? "FairFace uses age buckets, so the predicted age bucket is shown beside the dataset label."
-      : "UTKFace uses exact ages, so the numeric prediction is shown beside the dataset age.";
+      ? "FairFace uses age buckets. Each selected model is compared against that bucketed label."
+      : "UTKFace uses exact ages. Each selected model is compared against the numeric dataset age.";
 
-  const predictedAgeBlock = detection
-    ? state.groundTruth.age_kind === "bucket"
-      ? `${detection.age_years} years (${detection.age_bucket})`
-      : `${detection.age_years} years`
-    : "No detected face selected";
+  const predictionSections = selectedModels
+    .map((model) => {
+      const result = getResultForModel(model.id);
+      const detection = getDetectionForModel(model.id);
+      const isActive = activeDisplayModel && activeDisplayModel.id === model.id;
 
-  const predictedGenderBlock = detection ? detection.gender_label : "No detected face selected";
+      if (!result) {
+        return `
+          <section class="comparison-section model-section${isActive ? " active-model" : ""}" data-model-id="${model.id}">
+            <h3>${model.label}</h3>
+            <p class="empty-inline">No result loaded yet.</p>
+          </section>
+        `;
+      }
+
+      if (result.error) {
+        return `
+          <section class="comparison-section model-section${isActive ? " active-model" : ""}" data-model-id="${model.id}">
+            <h3>${model.label}</h3>
+            <p class="empty-inline">${result.error}</p>
+          </section>
+        `;
+      }
+
+      return `
+        <section class="comparison-section model-section${isActive ? " active-model" : ""}" data-model-id="${model.id}">
+          <h3>${model.label}</h3>
+          <dl class="comparison-list">
+            <div><dt>Model</dt><dd>${model.label}</dd></div>
+            <div><dt>Age</dt><dd>${formatPredictionAge(detection, state.groundTruth.age_kind)}</dd></div>
+            <div><dt>Gender</dt><dd>${detection ? detection.gender_label : "No detected face"}</dd></div>
+            <div><dt>Face confidence</dt><dd>${detection && detection.face_confidence != null ? `${Math.round(detection.face_confidence * 100)}%` : "n/a"}</dd></div>
+            <div><dt>Faces detected</dt><dd>${result.detections.length}</dd></div>
+          </dl>
+        </section>
+      `;
+    })
+    .join("");
 
   comparisonView.className = "comparison-view";
   comparisonView.innerHTML = `
-    <div class="comparison-grid">
+    <div class="comparison-grid multi-model-grid">
       <section class="comparison-section">
         <h3>Dataset ground truth</h3>
         <dl class="comparison-list">
@@ -280,14 +543,7 @@ function renderComparison(errorMessage = null) {
           <div><dt>Metadata</dt><dd>${state.groundTruth.demographic_label || "n/a"}</dd></div>
         </dl>
       </section>
-      <section class="comparison-section">
-        <h3>Selected prediction</h3>
-        <dl class="comparison-list">
-          <div><dt>Age</dt><dd>${predictedAgeBlock}</dd></div>
-          <div><dt>Gender</dt><dd>${predictedGenderBlock}</dd></div>
-          <div><dt>Face confidence</dt><dd>${detection ? `${Math.round(detection.face_confidence * 100)}%` : "n/a"}</dd></div>
-        </dl>
-      </section>
+      ${predictionSections}
     </div>
   `;
 }
@@ -297,6 +553,8 @@ function drawOverlay() {
   const rect = previewImage.getBoundingClientRect();
   const pixelRatio = window.devicePixelRatio || 1;
   const parentRect = overlayCanvas.parentElement.getBoundingClientRect();
+  const displayResult = getDisplayResult();
+  const detections = displayResult && displayResult.detections ? displayResult.detections : [];
 
   overlayCanvas.style.width = `${rect.width}px`;
   overlayCanvas.style.height = `${rect.height}px`;
@@ -308,15 +566,15 @@ function drawOverlay() {
   context.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
   context.clearRect(0, 0, rect.width, rect.height);
 
-  if (!state.imageSize || !state.detections.length || !rect.width || !rect.height) {
+  if (!state.imageSize || !detections.length || !rect.width || !rect.height) {
     return;
   }
 
   const scaleX = rect.width / state.imageSize.width;
   const scaleY = rect.height / state.imageSize.height;
 
-  state.detections.forEach((detection, index) => {
-    const isActive = detection.id === state.activeDetectionId;
+  detections.forEach((detection, index) => {
+    const isActive = index === state.activeDetectionIndex;
     const { x, y, width, height } = detection.bbox;
     const left = x * scaleX;
     const top = y * scaleY;
@@ -338,50 +596,62 @@ function drawOverlay() {
 }
 
 function hitTestDetection(offsetX, offsetY) {
-  if (!state.imageSize || !state.detections.length) {
+  const rect = overlayCanvas.getBoundingClientRect();
+  const displayResult = getDisplayResult();
+  const detections = displayResult && displayResult.detections ? displayResult.detections : [];
+
+  if (!state.imageSize || !detections.length) {
     return null;
   }
 
-  const rect = overlayCanvas.getBoundingClientRect();
   const scaleX = rect.width / state.imageSize.width;
   const scaleY = rect.height / state.imageSize.height;
 
-  return (
-    state.detections.find((detection) => {
-      const box = detection.bbox;
-      const left = box.x * scaleX;
-      const top = box.y * scaleY;
-      const width = box.width * scaleX;
-      const height = box.height * scaleY;
-      return (
-        offsetX >= left &&
-        offsetX <= left + width &&
-        offsetY >= top &&
-        offsetY <= top + height
-      );
-    }) || null
-  );
+  const index = detections.findIndex((detection) => {
+    const box = detection.bbox;
+    const left = box.x * scaleX;
+    const top = box.y * scaleY;
+    const width = box.width * scaleX;
+    const height = box.height * scaleY;
+    return (
+      offsetX >= left &&
+      offsetX <= left + width &&
+      offsetY >= top &&
+      offsetY <= top + height
+    );
+  });
+  return index >= 0 ? index : null;
 }
 
-modelSelect.addEventListener("change", async () => {
-  syncModelDescription();
-  if (!state.activeImageId) {
+comparisonView.addEventListener("click", (event) => {
+  const section = event.target.closest("[data-model-id]");
+  if (!section) {
     return;
   }
-  const imageRecord = state.datasetImages.find((item) => item.id === state.activeImageId);
-  if (imageRecord) {
-    await analyzeDatasetImage(imageRecord);
+
+  const modelId = section.dataset.modelId;
+  if (!modelId || !state.selectedModelIds.includes(modelId)) {
+    return;
   }
+
+  state.activeDisplayModelId = modelId;
+  state.activeDetectionIndex = 0;
+  syncModelDescription();
+  syncPreviewSubtitle();
+  renderDetectionList();
+  renderComparison();
+  drawOverlay();
 });
 
 overlayCanvas.addEventListener("click", (event) => {
-  const detection = hitTestDetection(event.offsetX, event.offsetY);
-  if (detection) {
-    state.activeDetectionId = detection.id;
-    renderDetectionList();
-    renderComparison();
-    drawOverlay();
+  const detectionIndex = hitTestDetection(event.offsetX, event.offsetY);
+  if (detectionIndex == null || detectionIndex < 0) {
+    return;
   }
+  state.activeDetectionIndex = detectionIndex;
+  renderDetectionList();
+  renderComparison();
+  drawOverlay();
 });
 
 reloadDatasets.addEventListener("click", async () => {

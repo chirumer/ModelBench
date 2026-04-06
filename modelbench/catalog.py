@@ -7,6 +7,7 @@ from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent
 REPO_ROOT = BASE_DIR.parent
 SSR_NET_DIR = REPO_ROOT / "SSR-Net"
+DEEPFACE_DIR = REPO_ROOT / "deepface"
 STATIC_DIR = BASE_DIR / "static"
 DATASET_STATIC_DIR = STATIC_DIR / "datasets"
 DATASET_MANIFEST_DIR = BASE_DIR / "dataset_manifests"
@@ -31,8 +32,11 @@ class ModelPresetDefinition:
     id: str
     label: str
     description: str
-    age_weight_path: Path
-    gender_weight_path: Path
+    provider: str
+    family: str
+    age_weight_path: Path | None = None
+    gender_weight_path: Path | None = None
+    detector_backend: str | None = None
 
 
 DATASET_DEFINITIONS = {
@@ -58,8 +62,10 @@ DATASET_DEFINITIONS = {
 MODEL_PRESETS = {
     "wiki": ModelPresetDefinition(
         id="wiki",
-        label="WIKI",
-        description="WIKI age weights with WIKI gender weights.",
+        label="SSR-Net (WIKI)",
+        description="SSR-Net using WIKI age weights with WIKI gender weights.",
+        provider="ssrnet",
+        family="ssrnet",
         age_weight_path=SSR_NET_DIR
         / "pre-trained/wiki/ssrnet_3_3_3_64_1.0_1.0/ssrnet_3_3_3_64_1.0_1.0.h5",
         gender_weight_path=SSR_NET_DIR
@@ -67,8 +73,10 @@ MODEL_PRESETS = {
     ),
     "imdb": ModelPresetDefinition(
         id="imdb",
-        label="IMDB",
-        description="IMDB age weights with IMDB gender weights.",
+        label="SSR-Net (IMDB)",
+        description="SSR-Net using IMDB age weights with IMDB gender weights.",
+        provider="ssrnet",
+        family="ssrnet",
         age_weight_path=SSR_NET_DIR
         / "pre-trained/imdb/ssrnet_3_3_3_64_1.0_1.0/ssrnet_3_3_3_64_1.0_1.0.h5",
         gender_weight_path=SSR_NET_DIR
@@ -76,11 +84,21 @@ MODEL_PRESETS = {
     ),
     "morph": ModelPresetDefinition(
         id="morph",
-        label="MORPH",
-        description="MORPH2 age weights with MORPH gender weights.",
+        label="SSR-Net (MORPH)",
+        description="SSR-Net using MORPH2 age weights with MORPH gender weights.",
+        provider="ssrnet",
+        family="ssrnet",
         age_weight_path=SSR_NET_DIR
         / "pre-trained/morph2/ssrnet_3_3_3_64_1.0_1.0/ssrnet_3_3_3_64_1.0_1.0.h5",
         gender_weight_path=SSR_NET_DIR
         / "pre-trained/morph_gender_models/ssrnet_3_3_3_64_1.0_1.0/ssrnet_3_3_3_64_1.0_1.0.h5",
+    ),
+    "deepface": ModelPresetDefinition(
+        id="deepface",
+        label="DeepFace",
+        description="DeepFace age and gender analysis with MTCNN face detection.",
+        provider="deepface",
+        family="demography",
+        detector_backend="mtcnn",
     ),
 }

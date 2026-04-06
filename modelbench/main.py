@@ -24,6 +24,9 @@ def create_app(service_factory: Callable[[], object] | None = None) -> FastAPI:
             factory = InferenceService
         app.state.service = factory()
         yield
+        close = getattr(app.state.service, "close", None)
+        if callable(close):
+            close()
 
     app = FastAPI(
         title="ModelBench",
@@ -35,6 +38,10 @@ def create_app(service_factory: Callable[[], object] | None = None) -> FastAPI:
     @app.get("/")
     async def index() -> FileResponse:
         return FileResponse(INDEX_FILE)
+
+    @app.get("/api/health")
+    async def health(request: Request) -> dict:
+        return request.app.state.service.health()
 
     @app.get("/api/models")
     async def list_models(request: Request) -> dict:

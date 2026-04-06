@@ -11,7 +11,6 @@
       <header class="topbar">
         <div>
           <h1>ModelBench</h1>
-          <p>Inspect local benchmark images and compare SSR-Net predictions with dataset labels.</p>
         </div>
       </header>
 
@@ -19,8 +18,8 @@
         <aside class="sidebar">
           <section class="panel">
             <h2>Model preset</h2>
-            <label class="field-label" for="modelSelect">Active model</label>
-            <select id="modelSelect"></select>
+            <p class="field-label">Selected models</p>
+            <div id="modelList" class="model-list"></div>
             <p id="modelDescription" class="help-text"></p>
           </section>
 
@@ -53,11 +52,21 @@
               <div id="statusPill" class="status-pill">Idle</div>
             </div>
 
-            <div class="preview-stage">
-              <img id="previewImage" alt="Selected dataset image preview" />
-              <canvas id="overlayCanvas"></canvas>
-              <div id="emptyState" class="empty-state">
-                Choose a dataset, then select an image from the browser.
+            <div class="preview-workbench">
+              <div class="preview-stage">
+                <img id="previewImage" alt="Selected dataset image preview" />
+                <canvas id="overlayCanvas"></canvas>
+                <div id="emptyState" class="empty-state">
+                  Choose a dataset, then select an image from the browser.
+                </div>
+              </div>
+
+              <div class="preview-inspector-block faces-inspector">
+                <div class="panel-header inline-header">
+                  <h3>View model inference</h3>
+                  <p id="detectionsSummary" class="help-text">No detections yet.</p>
+                </div>
+                <div id="detectionList" class="detection-list"></div>
               </div>
             </div>
 
@@ -67,19 +76,11 @@
           <section class="panel comparison-panel">
             <div class="panel-header">
               <h2>Comparison</h2>
-              <p id="comparisonNote" class="help-text">Ground truth and predictions appear here.</p>
+              <p id="comparisonNote" class="help-text">Ground truth and selected model predictions appear here.</p>
             </div>
             <div id="comparisonView" class="comparison-view empty-detail">
               No dataset image selected.
             </div>
-          </section>
-
-          <section class="panel">
-            <div class="panel-header">
-              <h2>Detected faces</h2>
-              <p id="detectionsSummary" class="help-text">No detections yet.</p>
-            </div>
-            <div id="detectionList" class="detection-list"></div>
           </section>
         </section>
       </section>

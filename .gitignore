@@ -1,6 +1,8 @@
 .DS_Store
 .pytest_cache/
 .venv/
+.venvs/
+.run/
 __pycache__/
 *.pyc
 
@@ -12,3 +14,4 @@ modelbench/tests/__pycache__/
 SSR-Net/.venv/
 SSR-Net/.pytest_cache/
 SSR-Net/__pycache__/
+deepface/__pycache__/

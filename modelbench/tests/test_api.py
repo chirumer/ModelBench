@@ -8,9 +8,18 @@ class FakeService:
         return [
             {
                 "id": "wiki",
-                "label": "WIKI",
-                "description": "WIKI preset.",
-            }
+                "label": "SSR-Net (WIKI)",
+                "description": "SSR-Net using WIKI age weights with WIKI gender weights.",
+                "provider": "ssrnet",
+                "family": "ssrnet",
+            },
+            {
+                "id": "deepface",
+                "label": "DeepFace",
+                "description": "DeepFace preset.",
+                "provider": "deepface",
+                "family": "demography",
+            },
         ]
 
     def list_datasets(self):
@@ -38,11 +47,21 @@ class FakeService:
     def analyze_dataset_image(self, dataset_image_id, model_id):
         if dataset_image_id != "utkface-001":
             raise FakeInputError("Unknown dataset image", status_code=404)
-        if model_id != "wiki":
+        if model_id not in {"wiki", "deepface"}:
             raise FakeInputError("Unknown model_id", status_code=400)
         return {
             "source": "dataset",
-            "model": {"id": "wiki", "label": "WIKI", "description": "WIKI preset."},
+            "model": {
+                "id": model_id,
+                "label": "DeepFace" if model_id == "deepface" else "SSR-Net (WIKI)",
+                "description": (
+                    "DeepFace preset."
+                    if model_id == "deepface"
+                    else "SSR-Net using WIKI age weights with WIKI gender weights."
+                ),
+                "provider": "deepface" if model_id == "deepface" else "ssrnet",
+                "family": "demography" if model_id == "deepface" else "ssrnet",
+            },
             "dataset": {
                 "id": "utkface",
                 "name": "UTKFace",
@@ -62,18 +81,44 @@ class FakeService:
                 "demographic_label": "White",
                 "comparison_age_display": "31",
             },
-            "detections": [],
-            "warnings": ["No faces detected in this image."],
+            "detections": (
+                [
+                    {
+                        "id": "face-1",
+                        "label": "Face 1",
+                        "bbox": {"x": 10, "y": 20, "width": 100, "height": 120},
+                        "face_confidence": None,
+                        "age_years": 31,
+                        "age_bucket": "30-39",
+                        "gender_label": "female",
+                        "gender_score": None,
+                        "face_thumbnail_url": "data:image/jpeg;base64,abc",
+                    }
+                ]
+                if model_id == "deepface"
+                else []
+            ),
+            "warnings": [] if model_id == "deepface" else ["No faces detected in this image."],
         }
 
     def analyze_upload(self, filename, data, model_id):
         if filename.endswith(".txt"):
             raise FakeInputError("Unsupported image type.", status_code=400)
-        if model_id != "wiki":
+        if model_id not in {"wiki", "deepface"}:
             raise FakeInputError("Unknown model_id", status_code=400)
         return {
             "source": "upload",
-            "model": {"id": "wiki", "label": "WIKI", "description": "WIKI preset."},
+            "model": {
+                "id": model_id,
+                "label": "DeepFace" if model_id == "deepface" else "SSR-Net (WIKI)",
+                "description": (
+                    "DeepFace preset."
+                    if model_id == "deepface"
+                    else "SSR-Net using WIKI age weights with WIKI gender weights."
+                ),
+                "provider": "deepface" if model_id == "deepface" else "ssrnet",
+                "family": "demography" if model_id == "deepface" else "ssrnet",
+            },
             "dataset": None,
             "image": {"width": 640, "height": 480},
             "ground_truth": None,
@@ -82,11 +127,11 @@ class FakeService:
                     "id": "person-1",
                     "label": "Face 1",
                     "bbox": {"x": 10, "y": 20, "width": 100, "height": 120},
-                    "face_confidence": 0.991,
+                    "face_confidence": None if model_id == "deepface" else 0.991,
                     "age_years": 31,
                     "age_bucket": "30-39",
                     "gender_label": "male",
-                    "gender_score": 0.74,
+                    "gender_score": None if model_id == "deepface" else 0.74,
                     "face_thumbnail_url": "data:image/jpeg;base64,abc",
                 }
             ],
@@ -112,8 +157,10 @@ def test_models_endpoint_returns_catalog():
 
     assert response.status_code == 200
     payload = response.json()
-    assert len(payload["models"]) == 1
+    assert len(payload["models"]) == 2
     assert payload["models"][0]["id"] == "wiki"
+    assert payload["models"][0]["label"] == "SSR-Net (WIKI)"
+    assert payload["models"][1]["provider"] == "deepface"
 
 
 def test_datasets_endpoint_returns_catalog():
@@ -152,6 +199,19 @@ def test_analyze_accepts_dataset_image_id():
 
     assert response.status_code == 200
     assert response.json()["source"] == "dataset"
+
+
+def test_analyze_accepts_deepface_dataset_image():
+    with build_client() as client:
+        response = client.post(
+            "/api/analyze",
+            data={"dataset_image_id": "utkface-001", "model_id": "deepface"},
+        )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["model"]["provider"] == "deepface"
+    assert payload["detections"][0]["face_confidence"] is None
 
 
 def test_analyze_accepts_upload():

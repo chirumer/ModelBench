@@ -23,7 +23,8 @@ body {
 }
 
 button,
-select {
+select,
+input {
   font: inherit;
 }
 
@@ -98,14 +99,6 @@ select {
   font-size: 12px;
 }
 
-select {
-  width: 100%;
-  border: 1px solid var(--line-strong);
-  border-radius: 8px;
-  background: #fff;
-  padding: 9px 10px;
-}
-
 .secondary-button {
   border: 1px solid var(--line-strong);
   border-radius: 8px;
@@ -117,6 +110,42 @@ select {
 
 .secondary-button:hover {
   background: var(--accent-soft);
+}
+
+.model-list {
+  display: grid;
+  gap: 8px;
+}
+
+.model-option {
+  display: grid;
+  grid-template-columns: 18px 1fr;
+  gap: 10px;
+  align-items: start;
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+}
+
+.model-option.active {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.model-option input {
+  margin: 2px 0 0;
+}
+
+.model-option-title {
+  color: var(--text);
+  font-weight: 600;
+  margin-bottom: 3px;
+}
+
+.model-option-meta {
+  color: var(--muted);
+  font-size: 12px;
 }
 
 .dataset-cards,
@@ -201,7 +230,14 @@ select {
 }
 
 .preview-panel {
-  min-height: 520px;
+  min-height: 420px;
+}
+
+.preview-workbench {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 360px;
+  gap: 12px;
+  align-items: start;
 }
 
 .status-pill {
@@ -221,16 +257,54 @@ select {
   position: relative;
   display: grid;
   place-items: center;
-  min-height: 420px;
+  min-height: 300px;
+  max-height: 420px;
+  padding: 12px;
   overflow: hidden;
   border: 1px solid var(--line);
   border-radius: 8px;
   background: #fafafa;
 }
 
+.preview-inspector-block {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fcfcfd;
+  padding: 12px;
+  min-height: 300px;
+}
+
+.preview-inspector-block h3 {
+  margin: 0 0 10px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.inline-header {
+  margin-bottom: 10px;
+}
+
+.inline-header h3 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.faces-inspector {
+  align-self: stretch;
+}
+
+.faces-inspector .detection-list {
+  max-height: 420px;
+  overflow: auto;
+  padding-right: 4px;
+}
+
 #previewImage {
   display: none;
-  width: 100%;
+  max-width: 100%;
+  max-height: 360px;
+  width: auto;
   height: auto;
 }
 
@@ -267,11 +341,24 @@ select {
   gap: 12px;
 }
 
+.multi-model-grid {
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+}
+
 .comparison-section {
   border: 1px solid var(--line);
   border-radius: 8px;
   padding: 12px;
   background: #fcfcfd;
+}
+
+.model-section {
+  cursor: pointer;
+}
+
+.model-section.active-model {
+  border-color: var(--accent);
+  background: var(--accent-soft);
 }
 
 .comparison-section h3,
@@ -320,13 +407,27 @@ select {
   font-size: 12px;
 }
 
-@media (max-width: 1080px) {
+@media (max-width: 1320px) {
+  .preview-workbench {
+    grid-template-columns: minmax(0, 1fr) 320px;
+  }
+}
+
+@media (max-width: 980px) {
   .layout {
+    grid-template-columns: 1fr;
+  }
+
+  .preview-workbench {
     grid-template-columns: 1fr;
   }
 }
 
 @media (max-width: 720px) {
+  .preview-workbench {
+    grid-template-columns: 1fr;
+  }
+
   .comparison-grid {
     grid-template-columns: 1fr;
   }

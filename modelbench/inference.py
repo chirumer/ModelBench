@@ -1,24 +1,17 @@
 from __future__ import annotations
 
-import base64
 import io
 import json
 from pathlib import Path
 
-import numpy as np
+import httpx
 from PIL import Image, UnidentifiedImageError
-from mtcnn import MTCNN
-import tensorflow as tf
 
-from modelbench.catalog import DATASET_DEFINITIONS, MODEL_PRESETS
-from modelbench.ssrnet_model import SSRNet, SSRNetGeneral
+from modelbench.catalog import DATASET_DEFINITIONS
+from services.runtime import RUNTIME_CONFIGS
 
 
-IMAGE_SIZE = 64
-STAGE_NUM = [3, 3, 3]
-LAMBDA_LOCAL = 1.0
-LAMBDA_D = 1.0
-FACE_PADDING = 0.4
+SERVICE_ORDER = ("ssrnet", "deepface")
 ALLOWED_EXTENSIONS = {".jpg", ".jpeg", ".png", ".webp"}
 
 
@@ -29,50 +22,89 @@ class InferenceInputError(ValueError):
         self.status_code = status_code
 
 
-def _encode_image_data_url(image_array: np.ndarray) -> str:
-    buffer = io.BytesIO()
-    Image.fromarray(image_array.astype(np.uint8)).save(buffer, format="JPEG", quality=90)
-    encoded = base64.b64encode(buffer.getvalue()).decode("ascii")
-    return f"data:image/jpeg;base64,{encoded}"
+class BackendServiceClient:
+    def __init__(self, name: str) -> None:
+        self.name = name
+        self.runtime = RUNTIME_CONFIGS[name]
+        self.base_url = f"http://127.0.0.1:{self.runtime.port}"
+        self._client = httpx.Client(base_url=self.base_url, timeout=90.0)
 
+    def list_models(self) -> list[dict]:
+        try:
+            response = self._client.get("/models")
+        except httpx.HTTPError as exc:
+            raise InferenceInputError(
+                f"{self.name} service is unavailable while loading models.",
+                status_code=502,
+            ) from exc
+        if response.status_code != 200:
+            raise InferenceInputError(
+                f"{self.name} service is unavailable while loading models.",
+                status_code=502,
+            )
+        return response.json()["models"]
 
-def _fairface_age_bucket(age_years: int) -> str:
-    if age_years <= 2:
-        return "0-2"
-    if age_years <= 9:
-        return "3-9"
-    if age_years <= 19:
-        return "10-19"
-    if age_years <= 29:
-        return "20-29"
-    if age_years <= 39:
-        return "30-39"
-    if age_years <= 49:
-        return "40-49"
-    if age_years <= 59:
-        return "50-59"
-    if age_years <= 69:
-        return "60-69"
-    return "more than 70"
+    def health(self) -> dict:
+        try:
+            response = self._client.get("/health")
+        except httpx.HTTPError as exc:
+            raise InferenceInputError(
+                f"{self.name} service health check failed.",
+                status_code=502,
+            ) from exc
+        if response.status_code != 200:
+            raise InferenceInputError(
+                f"{self.name} service health check failed.",
+                status_code=502,
+            )
+        return response.json()
+
+    def analyze(self, filename: str, data: bytes, model_id: str) -> dict:
+        try:
+            response = self._client.post(
+                "/analyze",
+                data={"model_id": model_id},
+                files={"file": (filename, data, "application/octet-stream")},
+            )
+        except httpx.HTTPError as exc:
+            raise InferenceInputError(
+                f"{self.name} service is unavailable while running inference.",
+                status_code=502,
+            ) from exc
+
+        payload = response.json()
+        if response.status_code != 200:
+            detail = payload.get("detail", "Inference failed.")
+            raise InferenceInputError(detail, status_code=response.status_code)
+        return payload
+
+    def close(self) -> None:
+        self._client.close()
 
 
 class InferenceService:
     def __init__(self) -> None:
-        tf.get_logger().setLevel("ERROR")
-        self.detector = MTCNN()
-        self._model_cache: dict[str, dict] = {}
         self._dataset_manifest_cache: dict[str, dict] = {}
         self._dataset_image_index: dict[str, tuple[str, dict]] | None = None
+        self._service_clients = {
+            name: BackendServiceClient(name) for name in SERVICE_ORDER if name in RUNTIME_CONFIGS
+        }
+        self._model_index: dict[str, dict] | None = None
+
+    def close(self) -> None:
+        for client in self._service_clients.values():
+            client.close()
+
+    def health(self) -> dict:
+        services = {}
+        for name, client in self._service_clients.items():
+            services[name] = client.health()
+        return {"status": "ok", "service": "modelbench", "services": services}
 
     def list_models(self) -> list[dict]:
-        return [
-            {
-                "id": preset.id,
-                "label": preset.label,
-                "description": preset.description,
-            }
-            for preset in MODEL_PRESETS.values()
-        ]
+        self._refresh_model_index()
+        assert self._model_index is not None
+        return list(self._model_index.values())
 
     def list_datasets(self) -> list[dict]:
         items = []
@@ -105,33 +137,69 @@ class InferenceService:
 
     def analyze_dataset_image(self, dataset_image_id: str, model_id: str) -> dict:
         dataset_id, record = self._lookup_dataset_image(dataset_image_id)
-        manifest = self._load_manifest(dataset_id)
         image_path = Path(record["image_path"])
-        image = self._load_image_from_path(image_path)
+        data = image_path.read_bytes()
+        response = self._forward_analysis(image_path.name, data, model_id)
         definition = DATASET_DEFINITIONS[dataset_id]
-        return self._analyze_image(
-            image,
-            model_id=model_id,
-            source="dataset",
-            dataset={
-                "id": dataset_id,
-                "name": definition.name,
-                "description": definition.description,
-                "image_id": record["id"],
-                "image_url": record["image_url"],
-                "thumbnail_url": record["thumbnail_url"],
-            },
-            ground_truth=record["ground_truth"],
-            manifest_label_summary=record["label_summary"],
-            manifest=manifest,
+        manifest = self._load_manifest(dataset_id)
+        response.update(
+            {
+                "source": "dataset",
+                "dataset": {
+                    "id": dataset_id,
+                    "name": definition.name,
+                    "description": definition.description,
+                    "image_id": record["id"],
+                    "image_url": record["image_url"],
+                    "thumbnail_url": record["thumbnail_url"],
+                },
+                "ground_truth": record["ground_truth"],
+                "label_summary": record["label_summary"],
+                "dataset_image_count": len(manifest["images"]),
+            }
         )
+        return response
 
     def analyze_upload(self, filename: str, data: bytes, model_id: str) -> dict:
         suffix = Path(filename or "upload").suffix.lower()
         if suffix and suffix not in ALLOWED_EXTENSIONS:
             raise InferenceInputError("Unsupported image type. Use JPG, PNG, or WebP.")
-        image = self._load_image_from_bytes(data)
-        return self._analyze_image(image, model_id=model_id, source="upload")
+        self._validate_image_bytes(data)
+        response = self._forward_analysis(filename or "upload", data, model_id)
+        response.update(
+            {
+                "source": "upload",
+                "dataset": None,
+                "ground_truth": None,
+                "label_summary": None,
+                "dataset_image_count": None,
+            }
+        )
+        return response
+
+    def _refresh_model_index(self) -> None:
+        index: dict[str, dict] = {}
+        for name in SERVICE_ORDER:
+            client = self._service_clients[name]
+            for model in client.list_models():
+                entry = dict(model)
+                entry["service"] = name
+                index[entry["id"]] = entry
+        self._model_index = index
+
+    def _get_model_entry(self, model_id: str) -> dict:
+        if self._model_index is None or model_id not in self._model_index:
+            self._refresh_model_index()
+        assert self._model_index is not None
+        entry = self._model_index.get(model_id)
+        if entry is None:
+            raise InferenceInputError(f"Unknown model_id '{model_id}'.", status_code=400)
+        return entry
+
+    def _forward_analysis(self, filename: str, data: bytes, model_id: str) -> dict:
+        model = self._get_model_entry(model_id)
+        client = self._service_clients[model["service"]]
+        return client.analyze(filename, data, model_id)
 
     def _load_manifest(self, dataset_id: str) -> dict:
         if dataset_id in self._dataset_manifest_cache:
@@ -166,146 +234,9 @@ class InferenceService:
             )
         return record
 
-    def _get_models_for_preset(self, model_id: str) -> dict:
-        if model_id not in MODEL_PRESETS:
-            raise InferenceInputError(f"Unknown model_id '{model_id}'.", status_code=400)
-
-        if model_id not in self._model_cache:
-            preset = MODEL_PRESETS[model_id]
-            age_model = SSRNet(IMAGE_SIZE, STAGE_NUM, LAMBDA_LOCAL, LAMBDA_D)()
-            age_model.load_weights(preset.age_weight_path)
-            gender_model = SSRNetGeneral(IMAGE_SIZE, STAGE_NUM, LAMBDA_LOCAL, LAMBDA_D)()
-            gender_model.load_weights(preset.gender_weight_path)
-            self._model_cache[model_id] = {
-                "age_model": age_model,
-                "gender_model": gender_model,
-            }
-
-        return self._model_cache[model_id]
-
-    def _load_image_from_path(self, path: Path) -> np.ndarray:
-        with Image.open(path) as image:
-            return np.asarray(image.convert("RGB"), dtype=np.uint8)
-
-    def _load_image_from_bytes(self, data: bytes) -> np.ndarray:
+    def _validate_image_bytes(self, data: bytes) -> None:
         try:
             with Image.open(io.BytesIO(data)) as image:
-                return np.asarray(image.convert("RGB"), dtype=np.uint8)
+                image.verify()
         except UnidentifiedImageError as exc:
             raise InferenceInputError("Unsupported image content. Use JPG, PNG, or WebP.") from exc
-
-    def _analyze_image(
-        self,
-        image: np.ndarray,
-        *,
-        model_id: str,
-        source: str,
-        dataset: dict | None = None,
-        ground_truth: dict | None = None,
-        manifest_label_summary: str | None = None,
-        manifest: dict | None = None,
-    ) -> dict:
-        bundle = self._get_models_for_preset(model_id)
-        height, width = image.shape[:2]
-        raw_detections = self.detector.detect_faces(image)
-        valid_entries = []
-
-        for detection in raw_detections:
-            confidence = float(detection.get("confidence", 0.0))
-            x, y, box_width, box_height = detection.get("box", [0, 0, 0, 0])
-            x = max(int(x), 0)
-            y = max(int(y), 0)
-            box_width = max(int(box_width), 0)
-            box_height = max(int(box_height), 0)
-
-            if box_width == 0 or box_height == 0:
-                continue
-
-            x2 = min(x + box_width, width)
-            y2 = min(y + box_height, height)
-            if x2 <= x or y2 <= y:
-                continue
-
-            padded_crop = self._extract_face(image, x, y, x2, y2, width, height)
-            face_crop = np.asarray(
-                Image.fromarray(image[y:y2, x:x2]).resize((120, 120), Image.BILINEAR),
-                dtype=np.uint8,
-            )
-            valid_entries.append(
-                {
-                    "bbox": {
-                        "x": x,
-                        "y": y,
-                        "width": x2 - x,
-                        "height": y2 - y,
-                    },
-                    "face_confidence": confidence,
-                    "face": padded_crop,
-                    "face_thumb": face_crop,
-                }
-            )
-
-        valid_entries.sort(key=lambda entry: (entry["bbox"]["x"], entry["bbox"]["y"]))
-
-        warnings = []
-        if not valid_entries:
-            warnings.append("No faces detected in this image.")
-
-        detections = []
-        if valid_entries:
-            face_batch = np.stack([entry["face"] for entry in valid_entries]).astype(np.float32)
-            age_predictions = bundle["age_model"].predict(face_batch, verbose=0).reshape(-1)
-            gender_predictions = bundle["gender_model"].predict(face_batch, verbose=0).reshape(-1)
-
-            for index, (entry, age_prediction, gender_prediction) in enumerate(
-                zip(valid_entries, age_predictions, gender_predictions),
-                start=1,
-            ):
-                age_years = max(0, int(np.rint(float(age_prediction))))
-                gender_score = float(gender_prediction)
-                detections.append(
-                    {
-                        "id": f"face-{index}",
-                        "label": f"Face {index}",
-                        "bbox": entry["bbox"],
-                        "face_confidence": round(entry["face_confidence"], 4),
-                        "age_years": age_years,
-                        "age_bucket": _fairface_age_bucket(age_years),
-                        "gender_label": "female" if gender_score < 0.5 else "male",
-                        "gender_score": round(gender_score, 4),
-                        "face_thumbnail_url": _encode_image_data_url(entry["face_thumb"]),
-                    }
-                )
-
-        return {
-            "source": source,
-            "model": {
-                "id": model_id,
-                "label": MODEL_PRESETS[model_id].label,
-                "description": MODEL_PRESETS[model_id].description,
-            },
-            "dataset": dataset,
-            "image": {"width": width, "height": height},
-            "ground_truth": ground_truth,
-            "label_summary": manifest_label_summary,
-            "dataset_image_count": len(manifest["images"]) if manifest else None,
-            "detections": detections,
-            "warnings": warnings,
-        }
-
-    def _extract_face(
-        self, image: np.ndarray, x1: int, y1: int, x2: int, y2: int, width: int, height: int
-    ) -> np.ndarray:
-        box_width = x2 - x1
-        box_height = y2 - y1
-        pad_x = int(box_width * FACE_PADDING)
-        pad_y = int(box_height * FACE_PADDING)
-
-        left = max(x1 - pad_x, 0)
-        top = max(y1 - pad_y, 0)
-        right = min(x2 + pad_x, width)
-        bottom = min(y2 + pad_y, height)
-
-        crop = image[top:bottom, left:right]
-        resized = Image.fromarray(crop).resize((IMAGE_SIZE, IMAGE_SIZE), Image.BILINEAR)
-        return np.asarray(resized, dtype=np.float32)
