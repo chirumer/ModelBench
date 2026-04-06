@@ -22,10 +22,14 @@
       <section class="bulk-layout">
         <aside class="bulk-sidebar">
           <section class="panel">
+            <button id="startBulkRunButton" class="primary-button" type="button">Run bulk inference</button>
+            <p id="bulkRunMessage" class="help-text bulk-run-message">Choose models and age classes, then start a run.</p>
+          </section>
+
+          <section class="panel">
             <h2>Models</h2>
             <p class="field-label">Selected models</p>
             <div id="bulkModelList" class="model-list"></div>
-            <p id="bulkModelDescription" class="help-text"></p>
           </section>
 
           <section class="panel">
@@ -48,11 +52,6 @@
             <div id="presetGroups" class="preset-groups">
               <div class="preset-empty">Run bulk inference to compute live preset recommendations.</div>
             </div>
-          </section>
-
-          <section class="panel">
-            <button id="startBulkRunButton" class="primary-button" type="button">Run bulk inference</button>
-            <p id="bulkRunMessage" class="help-text bulk-run-message">Choose models and age classes, then start a run.</p>
           </section>
         </aside>
 

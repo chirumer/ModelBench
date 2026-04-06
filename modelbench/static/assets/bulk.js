@@ -12,7 +12,6 @@ const state = {
 };
 
 const bulkModelList = document.getElementById("bulkModelList");
-const bulkModelDescription = document.getElementById("bulkModelDescription");
 const babyMaxSlider = document.getElementById("babyMaxSlider");
 const adultMaxSlider = document.getElementById("adultMaxSlider");
 const babyMaxValue = document.getElementById("babyMaxValue");
@@ -33,6 +32,41 @@ const closeClassPreviewButton = document.getElementById("closeClassPreviewButton
 const classPreviewTitle = document.getElementById("classPreviewTitle");
 const classPreviewSummary = document.getElementById("classPreviewSummary");
 const classPreviewContent = document.getElementById("classPreviewContent");
+const BULK_INFERENCE_STORAGE_KEY = "bulk_inference";
+const restoredBulkState = readBulkSessionState();
+
+function readBulkSessionState() {
+  try {
+    return JSON.parse(window.sessionStorage.getItem(BULK_INFERENCE_STORAGE_KEY) || "{}");
+  } catch {
+    return {};
+  }
+}
+
+function writeBulkSessionState() {
+  try {
+    window.sessionStorage.setItem(
+      BULK_INFERENCE_STORAGE_KEY,
+      JSON.stringify({
+        selectedModelIds: state.selectedModelIds,
+        babyMax: Number(babyMaxSlider.value),
+        adultMax: Number(adultMaxSlider.value),
+        runId: state.runId,
+        activePreview: state.activePreview,
+      }),
+    );
+  } catch {
+    // Ignore session storage issues.
+  }
+}
+
+function clearStoredRunState() {
+  state.runId = null;
+  state.run = null;
+  state.presets = null;
+  state.activePreview = null;
+  writeBulkSessionState();
+}
 
 function getSelectedModels() {
   return state.models.filter((model) => state.selectedModelIds.includes(model.id));
@@ -128,8 +162,8 @@ function renderModelList() {
         state.selectedModelIds = state.selectedModelIds.filter((id) => id !== model.id);
       }
       renderModelList();
-      renderModelDescription();
       renderResultsPanels();
+      writeBulkSessionState();
     });
 
     const content = document.createElement("div");
@@ -148,16 +182,6 @@ function renderModelList() {
     option.classList.toggle("active", checkbox.checked);
     bulkModelList.appendChild(option);
   });
-}
-
-function renderModelDescription() {
-  const selectedModels = getSelectedModels();
-  if (!selectedModels.length) {
-    bulkModelDescription.textContent = "Select at least one model.";
-    return;
-  }
-
-  bulkModelDescription.textContent = `${selectedModels.length} model${selectedModels.length === 1 ? "" : "s"} selected: ${selectedModels.map((model) => model.label).join(", ")}.`;
 }
 
 function formatPresetRange(preset) {
@@ -356,6 +380,7 @@ async function loadPresets() {
     }
     state.presets = payload.presets;
     renderPresetGroups();
+    writeBulkSessionState();
   } catch (error) {
     presetGroups.innerHTML = `<div class="preset-empty">${error.message}</div>`;
   }
@@ -365,6 +390,7 @@ function closeClassPreview() {
   state.activePreview = null;
   classPreviewModal.classList.add("hidden");
   classPreviewModal.setAttribute("aria-hidden", "true");
+  writeBulkSessionState();
 }
 
 async function loadClassPreview() {
@@ -394,6 +420,7 @@ async function loadClassPreview() {
       modelId: preview.model.id,
       classId: preview.class_id,
     };
+    writeBulkSessionState();
     classPreviewTitle.textContent = `${preview.dataset.name} · ${preview.model.label} · ${preview.class_label}`;
     classPreviewSummary.textContent = `Showing ${preview.summary.total_count} actual ${preview.class_label} images. ${preview.summary.correct_count} predicted as ${preview.class_label}.`;
 
@@ -434,6 +461,7 @@ async function openClassPreview(datasetId, modelId, classId) {
   state.activePreview = { datasetId, modelId, classId };
   classPreviewModal.classList.remove("hidden");
   classPreviewModal.setAttribute("aria-hidden", "false");
+  writeBulkSessionState();
   await loadClassPreview();
 }
 
@@ -469,7 +497,21 @@ async function loadInitialData() {
 
   state.models = (await modelsResponse.json()).models;
   state.datasets = (await datasetsResponse.json()).datasets;
-  state.selectedModelIds = state.models.map((model) => model.id);
+  const savedSelectedModelIds = Array.isArray(restoredBulkState.selectedModelIds)
+    ? restoredBulkState.selectedModelIds.filter((modelId) =>
+        state.models.some((model) => model.id === modelId),
+      )
+    : [];
+  state.selectedModelIds = savedSelectedModelIds.length
+    ? savedSelectedModelIds
+    : state.models.map((model) => model.id);
+  babyMaxSlider.value = String(
+    Number.isInteger(restoredBulkState.babyMax) ? restoredBulkState.babyMax : Number(babyMaxSlider.value),
+  );
+  adultMaxSlider.value = String(
+    Number.isInteger(restoredBulkState.adultMax) ? restoredBulkState.adultMax : Number(adultMaxSlider.value),
+  );
+  writeBulkSessionState();
 }
 
 function stopPolling() {
@@ -492,7 +534,9 @@ async function pollRun() {
     }
 
     state.run = payload.run;
+    state.selectedModelIds = state.run.selected_models.map((model) => model.id);
     renderRunStatus();
+    renderModelList();
     renderResultsPanels();
     loadPresets();
     if (state.activePreview) {
@@ -508,7 +552,14 @@ async function pollRun() {
       renderRunMessage("Bulk inference finished. Adjust age classes to recalculate saved results or run again.");
       stopPolling();
     }
+    writeBulkSessionState();
   } catch (error) {
+    if (error.message.includes("Bulk run not found")) {
+      clearStoredRunState();
+      renderRunStatus();
+      renderResultsPanels();
+      renderPresetGroups();
+    }
     renderRunMessage(error.message, true);
     setControlsDisabled(false);
     setSliderState(false);
@@ -548,8 +599,10 @@ async function startBulkRun() {
     stopPolling();
     state.runId = payload.run_id;
     state.run = payload.run;
+    state.selectedModelIds = payload.run.selected_models.map((model) => model.id);
     state.presets = null;
     renderRunStatus();
+    renderModelList();
     renderResultsPanels();
     renderPresetGroups();
     loadPresets();
@@ -559,6 +612,7 @@ async function startBulkRun() {
     } else {
       setControlsDisabled(false);
     }
+    writeBulkSessionState();
   } catch (error) {
     renderRunMessage(error.message, true);
     setControlsDisabled(false);
@@ -594,7 +648,9 @@ async function pushRunSettings() {
     }
 
     state.run = payload.run;
+    state.selectedModelIds = payload.run.selected_models.map((model) => model.id);
     renderRunStatus();
+    renderModelList();
     renderResultsPanels();
     renderPresetGroups();
     if (state.activePreview) {
@@ -605,6 +661,7 @@ async function pushRunSettings() {
     } else {
       renderRunMessage("Age classes updated. Age-class metrics were recalculated from saved predictions.");
     }
+    writeBulkSessionState();
   } catch (error) {
     renderRunMessage(error.message, true);
   }
@@ -628,6 +685,7 @@ function applyPreset(babyMax, adultMax) {
   adultMaxSlider.value = String(adultMax);
   renderAgeClassSummary();
   renderPresetGroups();
+  writeBulkSessionState();
   scheduleSettingsUpdate();
 }
 
@@ -635,6 +693,7 @@ babyMaxSlider.addEventListener("input", () => {
   normalizeSliderValues("baby");
   renderAgeClassSummary();
   renderPresetGroups();
+  writeBulkSessionState();
   scheduleSettingsUpdate();
 });
 
@@ -642,6 +701,7 @@ adultMaxSlider.addEventListener("input", () => {
   normalizeSliderValues("adult");
   renderAgeClassSummary();
   renderPresetGroups();
+  writeBulkSessionState();
   scheduleSettingsUpdate();
 });
 
@@ -678,12 +738,52 @@ async function init() {
     await loadInitialData();
     renderAgeClassSummary();
     renderModelList();
-    renderModelDescription();
     renderRunStatus();
     renderResultsPanels();
     renderPresetGroups();
     renderRunMessage("Choose models and age classes, then start a run.");
     setSliderState(false);
+    if (restoredBulkState.runId) {
+      state.runId = restoredBulkState.runId;
+      try {
+        const response = await fetch(`/api/bulk-runs/${state.runId}`);
+        const payload = await response.json();
+        if (!response.ok) {
+          throw new Error(payload.detail || "Unable to restore bulk run.");
+        }
+        state.run = payload.run;
+        state.selectedModelIds = state.run.selected_models.map((model) => model.id);
+        renderModelList();
+        renderRunStatus();
+        renderResultsPanels();
+        await loadPresets();
+        if (isRunActive()) {
+          setControlsDisabled(true);
+          state.pollTimer = window.setTimeout(pollRun, 1000);
+        } else {
+          setControlsDisabled(false);
+        }
+        renderRunMessage(
+          isRunActive()
+            ? "Bulk inference resumed from the current session."
+            : "Restored the latest bulk inference results from this session.",
+        );
+        if (restoredBulkState.activePreview?.datasetId && restoredBulkState.activePreview?.modelId && restoredBulkState.activePreview?.classId) {
+          await openClassPreview(
+            restoredBulkState.activePreview.datasetId,
+            restoredBulkState.activePreview.modelId,
+            restoredBulkState.activePreview.classId,
+          );
+        }
+      } catch (error) {
+        clearStoredRunState();
+        renderRunStatus();
+        renderResultsPanels();
+        renderPresetGroups();
+        renderRunMessage("No saved bulk run was available to restore. Start a new run.", true);
+      }
+    }
+    writeBulkSessionState();
   } catch (error) {
     renderRunMessage(error.message, true);
   }

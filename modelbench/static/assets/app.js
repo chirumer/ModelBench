@@ -13,6 +13,9 @@ const state = {
   groundTruth: null,
 };
 
+const MODEL_BENCH_STORAGE_KEY = "model_bench";
+const restoredSessionState = readSessionState();
+
 const modelList = document.getElementById("modelList");
 const modelDescription = document.getElementById("modelDescription");
 const datasetCards = document.getElementById("datasetCards");
@@ -33,6 +36,69 @@ const reloadDatasets = document.getElementById("reloadDatasets");
 const datasetCardTemplate = document.getElementById("datasetCardTemplate");
 const imageTileTemplate = document.getElementById("imageTileTemplate");
 const detectionCardTemplate = document.getElementById("detectionCardTemplate");
+
+function readSessionState() {
+  try {
+    return JSON.parse(window.sessionStorage.getItem(MODEL_BENCH_STORAGE_KEY) || "{}");
+  } catch {
+    return {};
+  }
+}
+
+function writeSessionState() {
+  try {
+    window.sessionStorage.setItem(
+      MODEL_BENCH_STORAGE_KEY,
+      JSON.stringify({
+        selectedModelIds: state.selectedModelIds,
+        activeDatasetId: state.activeDatasetId,
+        activeImageId: state.activeImageId,
+        activeDisplayModelId: state.activeDisplayModelId,
+        activeDetectionIndex: state.activeDetectionIndex,
+      }),
+    );
+  } catch {
+    // Ignore session storage issues.
+  }
+}
+
+function getRestoredDatasetId() {
+  if (
+    restoredSessionState.activeDatasetId &&
+    state.datasets.some((dataset) => dataset.id === restoredSessionState.activeDatasetId)
+  ) {
+    return restoredSessionState.activeDatasetId;
+  }
+  return state.datasets[0]?.id || null;
+}
+
+function restoreAnalysisFocus() {
+  const savedDisplayModelId =
+    restoredSessionState.activeDisplayModelId &&
+    state.selectedModelIds.includes(restoredSessionState.activeDisplayModelId)
+      ? restoredSessionState.activeDisplayModelId
+      : null;
+
+  if (savedDisplayModelId) {
+    state.activeDisplayModelId = savedDisplayModelId;
+  }
+
+  const activeResult = getDisplayResult();
+  if (!activeResult || !activeResult.detections.length) {
+    state.activeDetectionIndex = 0;
+    writeSessionState();
+    return;
+  }
+
+  const savedDetectionIndex = Number.isInteger(restoredSessionState.activeDetectionIndex)
+    ? restoredSessionState.activeDetectionIndex
+    : 0;
+  state.activeDetectionIndex = Math.min(
+    Math.max(savedDetectionIndex, 0),
+    activeResult.detections.length - 1,
+  );
+  writeSessionState();
+}
 
 function getSelectedModels() {
   return state.models.filter((model) => state.selectedModelIds.includes(model.id));
@@ -177,10 +243,13 @@ function renderModelList() {
       renderDetectionList();
       renderComparison();
       drawOverlay();
+      writeSessionState();
 
       const imageRecord = getActiveImageRecord();
       if (imageRecord) {
         await analyzeDatasetImage(imageRecord);
+      } else {
+        writeSessionState();
       }
     });
 
@@ -210,10 +279,22 @@ async function loadModels() {
 
   const payload = await response.json();
   state.models = payload.models;
-  state.selectedModelIds = state.models.slice(0, 1).map((model) => model.id);
-  state.activeDisplayModelId = state.selectedModelIds[0] || null;
+  const savedSelectedIds = Array.isArray(restoredSessionState.selectedModelIds)
+    ? restoredSessionState.selectedModelIds.filter((modelId) =>
+        state.models.some((model) => model.id === modelId),
+      )
+    : [];
+  state.selectedModelIds = savedSelectedIds.length
+    ? savedSelectedIds
+    : state.models.slice(0, 1).map((model) => model.id);
+  state.activeDisplayModelId =
+    restoredSessionState.activeDisplayModelId &&
+    state.selectedModelIds.includes(restoredSessionState.activeDisplayModelId)
+      ? restoredSessionState.activeDisplayModelId
+      : state.selectedModelIds[0] || null;
   renderModelList();
   syncModelDescription();
+  writeSessionState();
 }
 
 async function loadDatasets() {
@@ -225,10 +306,6 @@ async function loadDatasets() {
   const payload = await response.json();
   state.datasets = payload.datasets;
   renderDatasetCards();
-
-  if (!state.activeDatasetId && state.datasets.length) {
-    await selectDataset(state.datasets[0].id);
-  }
 }
 
 function renderDatasetCards() {
@@ -252,6 +329,7 @@ function resetAnalysisState() {
   state.resultsByModel = {};
   state.groundTruth = null;
   state.imageSize = null;
+  writeSessionState();
 }
 
 async function selectDataset(datasetId) {
@@ -272,6 +350,7 @@ async function selectDataset(datasetId) {
   datasetStatus.textContent = `${state.datasetImages.length} local images loaded. Scroll and select one to test.`;
   renderImageBrowser();
   syncPreviewSubtitle();
+  writeSessionState();
 }
 
 function renderImageBrowser() {
@@ -395,6 +474,7 @@ async function analyzeDatasetImage(imageRecord) {
   setStatus("Ready");
   syncModelDescription();
   syncPreviewSubtitle();
+  writeSessionState();
 }
 
 function renderDetectionList() {
@@ -465,6 +545,7 @@ function renderDetectionList() {
       renderDetectionList();
       renderComparison();
       drawOverlay();
+      writeSessionState();
     });
     detectionList.appendChild(node);
   });
@@ -641,6 +722,7 @@ comparisonView.addEventListener("click", (event) => {
   renderDetectionList();
   renderComparison();
   drawOverlay();
+  writeSessionState();
 });
 
 overlayCanvas.addEventListener("click", (event) => {
@@ -652,11 +734,19 @@ overlayCanvas.addEventListener("click", (event) => {
   renderDetectionList();
   renderComparison();
   drawOverlay();
+  writeSessionState();
 });
 
 reloadDatasets.addEventListener("click", async () => {
   try {
     await loadDatasets();
+    const datasetId =
+      (state.activeDatasetId && state.datasets.some((dataset) => dataset.id === state.activeDatasetId)
+        ? state.activeDatasetId
+        : getRestoredDatasetId());
+    if (datasetId) {
+      await selectDataset(datasetId);
+    }
   } catch (error) {
     setWarnings([error.message]);
   }
@@ -670,7 +760,31 @@ async function init() {
   try {
     await loadModels();
     await loadDatasets();
+    const restoredDatasetId = getRestoredDatasetId();
+    if (restoredDatasetId) {
+      await selectDataset(restoredDatasetId);
+    }
+
+    const restoredImageId =
+      restoredSessionState.activeImageId &&
+      state.datasetImages.some((image) => image.id === restoredSessionState.activeImageId)
+        ? restoredSessionState.activeImageId
+        : null;
+
+    if (restoredImageId) {
+      const restoredImage = state.datasetImages.find((image) => image.id === restoredImageId);
+      if (restoredImage) {
+        await analyzeDatasetImage(restoredImage);
+        restoreAnalysisFocus();
+        syncModelDescription();
+        syncPreviewSubtitle();
+        renderDetectionList();
+        renderComparison();
+        drawOverlay();
+      }
+    }
     setStatus("Ready");
+    writeSessionState();
   } catch (error) {
     setWarnings([error.message]);
     setStatus("Error");

@@ -339,6 +339,9 @@ def test_bulk_inference_page_serves_html():
 
     assert response.status_code == 200
     assert "Bulk Inference" in response.text
+    assert "Run bulk inference" in response.text
+    assert "models selected:" not in response.text
+    assert response.text.index("Run bulk inference") < response.text.index("<h2>Models</h2>")
 
 
 def test_datasets_endpoint_returns_catalog():
