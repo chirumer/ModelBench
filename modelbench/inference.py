@@ -7,6 +7,7 @@ from pathlib import Path
 import httpx
 from PIL import Image, UnidentifiedImageError
 
+from modelbench.bulk_runs import BulkRunManager
 from modelbench.catalog import DATASET_DEFINITIONS
 from services.runtime import RUNTIME_CONFIGS
 
@@ -90,6 +91,7 @@ class InferenceService:
             name: BackendServiceClient(name) for name in SERVICE_ORDER if name in RUNTIME_CONFIGS
         }
         self._model_index: dict[str, dict] | None = None
+        self._bulk_run_manager = BulkRunManager(self)
 
     def close(self) -> None:
         for client in self._service_clients.values():
@@ -134,6 +136,18 @@ class InferenceService:
             }
             for entry in manifest["images"]
         ]
+
+    def get_dataset_records(self, dataset_id: str) -> list[dict]:
+        definition = DATASET_DEFINITIONS.get(dataset_id)
+        if definition is None:
+            raise InferenceInputError(f"Unknown dataset '{dataset_id}'.", status_code=404)
+        return list(self._load_manifest(dataset_id)["images"])
+
+    def start_bulk_run(self, model_ids: list[str], baby_max: int, adult_max: int) -> dict:
+        return self._bulk_run_manager.start_run(model_ids, baby_max, adult_max)
+
+    def get_bulk_run(self, run_id: str) -> dict:
+        return self._bulk_run_manager.get_run(run_id)
 
     def analyze_dataset_image(self, dataset_image_id: str, model_id: str) -> dict:
         dataset_id, record = self._lookup_dataset_image(dataset_image_id)

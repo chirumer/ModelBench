@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Bulk Inference | ModelBench</title>
+    <link rel="stylesheet" href="/static/assets/styles.css" />
+    <link rel="stylesheet" href="/static/assets/bulk.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <header class="topbar">
+        <div class="topbar-head">
+          <h1>ModelBench</h1>
+          <nav class="topbar-nav" aria-label="Primary">
+            <a class="topbar-link" href="/">Model Bench</a>
+            <a class="topbar-link active" href="/bulk-inference">Bulk Inference</a>
+          </nav>
+        </div>
+      </header>
+
+      <section class="bulk-layout">
+        <aside class="bulk-sidebar">
+          <section class="panel">
+            <h2>Models</h2>
+            <p class="field-label">Selected models</p>
+            <div id="bulkModelList" class="model-list"></div>
+            <p id="bulkModelDescription" class="help-text"></p>
+          </section>
+
+          <section class="panel">
+            <h2>Age Classes</h2>
+            <div class="slider-block">
+              <label class="field-label" for="babyMaxSlider">Baby max age</label>
+              <input id="babyMaxSlider" type="range" min="0" max="80" value="12" />
+              <p id="babyMaxValue" class="help-text"></p>
+            </div>
+            <div class="slider-block">
+              <label class="field-label" for="adultMaxSlider">Man/Woman max age</label>
+              <input id="adultMaxSlider" type="range" min="1" max="116" value="59" />
+              <p id="adultMaxValue" class="help-text"></p>
+            </div>
+            <div id="ageClassSummary" class="age-class-summary"></div>
+          </section>
+
+          <section class="panel">
+            <button id="startBulkRunButton" class="primary-button" type="button">Run bulk inference</button>
+            <p id="bulkRunMessage" class="help-text bulk-run-message">Choose models and age classes, then start a run.</p>
+          </section>
+        </aside>
+
+        <section class="bulk-main">
+          <section class="panel">
+            <div class="panel-header">
+              <h2>Run Status</h2>
+              <div id="bulkRunStatusBadge" class="status-pill">Idle</div>
+            </div>
+            <div class="bulk-status-grid">
+              <div class="status-metric">
+                <span class="status-label">Current dataset</span>
+                <strong id="statusCurrentDataset">-</strong>
+              </div>
+              <div class="status-metric">
+                <span class="status-label">Current model</span>
+                <strong id="statusCurrentModel">-</strong>
+              </div>
+              <div class="status-metric">
+                <span class="status-label">Images tested</span>
+                <strong id="statusTestedImages">0</strong>
+              </div>
+              <div class="status-metric">
+                <span class="status-label">Images remaining</span>
+                <strong id="statusRemainingImages">0</strong>
+              </div>
+            </div>
+          </section>
+
+          <div id="bulkResultsPanels" class="bulk-results-panels"></div>
+        </section>
+      </section>
+    </main>
+
+    <script src="/static/assets/bulk.js" defer></script>
+  </body>
+</html>

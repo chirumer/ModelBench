@@ -7,11 +7,19 @@ from typing import Callable
 from fastapi import FastAPI, File, Form, HTTPException, Request, UploadFile
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
+from pydantic import BaseModel
 
 
 BASE_DIR = Path(__file__).resolve().parent
 STATIC_DIR = BASE_DIR / "static"
 INDEX_FILE = BASE_DIR / "templates" / "index.html"
+BULK_INDEX_FILE = BASE_DIR / "templates" / "bulk_inference.html"
+
+
+class BulkRunCreateRequest(BaseModel):
+    model_ids: list[str]
+    baby_max: int
+    adult_max: int
 
 
 def create_app(service_factory: Callable[[], object] | None = None) -> FastAPI:
@@ -38,6 +46,10 @@ def create_app(service_factory: Callable[[], object] | None = None) -> FastAPI:
     @app.get("/")
     async def index() -> FileResponse:
         return FileResponse(INDEX_FILE)
+
+    @app.get("/bulk-inference")
+    async def bulk_inference_page() -> FileResponse:
+        return FileResponse(BULK_INDEX_FILE)
 
     @app.get("/api/health")
     async def health(request: Request) -> dict:
@@ -83,6 +95,29 @@ def create_app(service_factory: Callable[[], object] | None = None) -> FastAPI:
         except Exception as exc:
             status_code = getattr(exc, "status_code", 500)
             detail = getattr(exc, "message", "Inference failed.")
+            raise HTTPException(status_code=status_code, detail=detail) from exc
+
+    @app.post("/api/bulk-runs")
+    async def create_bulk_run(request: Request, body: BulkRunCreateRequest) -> dict:
+        try:
+            snapshot = request.app.state.service.start_bulk_run(
+                body.model_ids,
+                body.baby_max,
+                body.adult_max,
+            )
+            return {"run_id": snapshot["run_id"], "run": snapshot}
+        except Exception as exc:
+            status_code = getattr(exc, "status_code", 500)
+            detail = getattr(exc, "message", "Bulk inference failed.")
+            raise HTTPException(status_code=status_code, detail=detail) from exc
+
+    @app.get("/api/bulk-runs/{run_id}")
+    async def get_bulk_run(request: Request, run_id: str) -> dict:
+        try:
+            return {"run": request.app.state.service.get_bulk_run(run_id)}
+        except Exception as exc:
+            status_code = getattr(exc, "status_code", 500)
+            detail = getattr(exc, "message", "Bulk inference failed.")
             raise HTTPException(status_code=status_code, detail=detail) from exc
 
     return app

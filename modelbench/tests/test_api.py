@@ -4,6 +4,64 @@ from modelbench.main import create_app
 
 
 class FakeService:
+    def __init__(self):
+        self._bulk_runs = {
+            "run-123": {
+                "run_id": "run-123",
+                "status": "running",
+                "created_at": "2026-04-06T00:00:00Z",
+                "started_at": "2026-04-06T00:00:01Z",
+                "finished_at": None,
+                "selected_models": [
+                    {
+                        "id": "wiki",
+                        "label": "SSR-Net (WIKI)",
+                        "description": "WIKI preset.",
+                        "provider": "ssrnet",
+                        "family": "ssrnet",
+                    }
+                ],
+                "datasets": [
+                    {
+                        "id": "utkface",
+                        "name": "UTKFace",
+                        "description": "Exact-age face crops.",
+                        "image_count": 100,
+                    }
+                ],
+                "settings": {"baby_max": 12, "adult_max": 59},
+                "progress": {
+                    "tested_images": 4,
+                    "total_images": 100,
+                    "current_dataset_id": "utkface",
+                    "current_model_id": "wiki",
+                },
+                "results": {
+                    "utkface": {
+                        "dataset": {
+                            "id": "utkface",
+                            "name": "UTKFace",
+                            "description": "Exact-age face crops.",
+                            "image_count": 100,
+                        },
+                        "models": {
+                            "wiki": {
+                                "tested_count": 4,
+                                "total_count": 100,
+                                "gender_correct_count": 3,
+                                "gender_accuracy": 0.75,
+                                "age_class_correct_count": 2,
+                                "age_class_accuracy": 0.5,
+                                "missed_detection_count": 1,
+                                "status": "running",
+                                "last_error": None,
+                            }
+                        },
+                    }
+                },
+            }
+        }
+
     def list_models(self):
         return [
             {
@@ -138,6 +196,19 @@ class FakeService:
             "warnings": [],
         }
 
+    def start_bulk_run(self, model_ids, baby_max, adult_max):
+        if not model_ids:
+            raise FakeInputError("model_ids must include at least one model.", status_code=400)
+        if baby_max < 0 or baby_max >= adult_max or adult_max > 116:
+            raise FakeInputError("Use slider values where 0 <= baby_max < adult_max <= 116.", status_code=400)
+        return self._bulk_runs["run-123"]
+
+    def get_bulk_run(self, run_id):
+        snapshot = self._bulk_runs.get(run_id)
+        if snapshot is None:
+            raise FakeInputError(f"Unknown bulk run '{run_id}'.", status_code=404)
+        return snapshot
+
 
 class FakeInputError(Exception):
     def __init__(self, message, status_code):
@@ -161,6 +232,14 @@ def test_models_endpoint_returns_catalog():
     assert payload["models"][0]["id"] == "wiki"
     assert payload["models"][0]["label"] == "SSR-Net (WIKI)"
     assert payload["models"][1]["provider"] == "deepface"
+
+
+def test_bulk_inference_page_serves_html():
+    with build_client() as client:
+        response = client.get("/bulk-inference")
+
+    assert response.status_code == 200
+    assert "Bulk Inference" in response.text
 
 
 def test_datasets_endpoint_returns_catalog():
@@ -239,3 +318,45 @@ def test_upload_rejects_unsupported_extension():
 
     assert response.status_code == 400
     assert response.json()["detail"] == "Unsupported image type."
+
+
+def test_create_bulk_run_rejects_empty_models():
+    with build_client() as client:
+        response = client.post(
+            "/api/bulk-runs",
+            json={"model_ids": [], "baby_max": 12, "adult_max": 59},
+        )
+
+    assert response.status_code == 400
+    assert response.json()["detail"] == "model_ids must include at least one model."
+
+
+def test_create_bulk_run_rejects_invalid_slider_range():
+    with build_client() as client:
+        response = client.post(
+            "/api/bulk-runs",
+            json={"model_ids": ["wiki"], "baby_max": 59, "adult_max": 59},
+        )
+
+    assert response.status_code == 400
+    assert "0 <= baby_max < adult_max <= 116" in response.json()["detail"]
+
+
+def test_create_bulk_run_returns_snapshot():
+    with build_client() as client:
+        response = client.post(
+            "/api/bulk-runs",
+            json={"model_ids": ["wiki"], "baby_max": 12, "adult_max": 59},
+        )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["run_id"] == "run-123"
+    assert payload["run"]["progress"]["tested_images"] == 4
+
+
+def test_get_bulk_run_returns_404_for_unknown_id():
+    with build_client() as client:
+        response = client.get("/api/bulk-runs/missing-run")
+
+    assert response.status_code == 404
