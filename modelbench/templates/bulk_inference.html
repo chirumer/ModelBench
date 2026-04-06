@@ -80,6 +80,22 @@
       </section>
     </main>
 
+    <div id="classPreviewModal" class="bulk-modal hidden" aria-hidden="true">
+      <div id="classPreviewBackdrop" class="bulk-modal-backdrop"></div>
+      <section class="bulk-modal-panel" role="dialog" aria-modal="true" aria-labelledby="classPreviewTitle">
+        <div class="bulk-modal-header">
+          <div>
+            <h2 id="classPreviewTitle">Class Preview</h2>
+            <p id="classPreviewSummary" class="help-text">Loading preview…</p>
+          </div>
+          <button id="closeClassPreviewButton" class="bulk-modal-close" type="button" aria-label="Close preview">
+            Close
+          </button>
+        </div>
+        <div id="classPreviewContent" class="bulk-modal-content"></div>
+      </section>
+    </div>
+
     <script src="/static/assets/bulk.js" defer></script>
   </body>
 </html>

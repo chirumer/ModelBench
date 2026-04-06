@@ -4,7 +4,7 @@ from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import Callable
 
-from fastapi import FastAPI, File, Form, HTTPException, Request, UploadFile
+from fastapi import FastAPI, File, Form, HTTPException, Query, Request, UploadFile
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
@@ -137,6 +137,28 @@ def create_app(service_factory: Callable[[], object] | None = None) -> FastAPI:
                     run_id,
                     body.baby_max,
                     body.adult_max,
+                )
+            }
+        except Exception as exc:
+            status_code = getattr(exc, "status_code", 500)
+            detail = getattr(exc, "message", "Bulk inference failed.")
+            raise HTTPException(status_code=status_code, detail=detail) from exc
+
+    @app.get("/api/bulk-runs/{run_id}/class-preview")
+    async def get_bulk_run_class_preview(
+        request: Request,
+        run_id: str,
+        dataset_id: str = Query(...),
+        model_id: str = Query(...),
+        class_id: str = Query(...),
+    ) -> dict:
+        try:
+            return {
+                "preview": request.app.state.service.get_bulk_run_class_preview(
+                    run_id,
+                    dataset_id,
+                    model_id,
+                    class_id,
                 )
             }
         except Exception as exc:

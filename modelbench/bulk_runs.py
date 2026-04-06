@@ -129,6 +129,85 @@ class BulkRunManager:
             payload.pop("_evaluation_records", None)
             return payload
 
+    def get_class_preview(self, run_id: str, dataset_id: str, model_id: str, class_id: str) -> dict:
+        with self._lock:
+            snapshot = self._runs.get(run_id)
+            if snapshot is None:
+                raise BulkRunInputError(f"Unknown bulk run '{run_id}'.", status_code=404)
+            if dataset_id not in snapshot["results"]:
+                raise BulkRunInputError(f"Unknown dataset '{dataset_id}'.", status_code=404)
+            if model_id not in snapshot["results"][dataset_id]["models"]:
+                raise BulkRunInputError(f"Unknown model '{model_id}' for dataset '{dataset_id}'.", status_code=404)
+            settings = copy.deepcopy(snapshot["settings"])
+            evaluations = copy.deepcopy(snapshot["_evaluation_records"][dataset_id][model_id])
+            dataset_meta = copy.deepcopy(snapshot["results"][dataset_id]["dataset"])
+            selected_models = copy.deepcopy(snapshot["selected_models"])
+
+        class_labels = {item.id: item.label for item in build_age_class_ranges(settings["baby_max"], settings["adult_max"])}
+        if class_id not in class_labels:
+            raise BulkRunInputError(f"Unknown class '{class_id}'.", status_code=404)
+
+        records = {entry["id"]: entry for entry in self._service.get_dataset_records(dataset_id)}
+        model_entry = next((item for item in selected_models if item["id"] == model_id), None)
+        if model_entry is None:
+            raise BulkRunInputError(f"Unknown model '{model_id}'.", status_code=404)
+
+        items = []
+        for evaluation in evaluations:
+            actual_class_ids = sorted(
+                self._actual_age_classes(
+                    evaluation["ground_truth"],
+                    settings["baby_max"],
+                    settings["adult_max"],
+                )
+            )
+            if class_id not in actual_class_ids:
+                continue
+
+            predicted_class_id = None
+            if evaluation["predicted_age_years"] is not None:
+                predicted_class_id = class_for_exact_age(
+                    int(evaluation["predicted_age_years"]),
+                    settings["baby_max"],
+                    settings["adult_max"],
+                )
+
+            record = records.get(evaluation["dataset_image_id"])
+            if record is None:
+                continue
+
+            items.append(
+                {
+                    "dataset_image_id": evaluation["dataset_image_id"],
+                    "image_url": record.get("image_url"),
+                    "thumbnail_url": record.get("thumbnail_url"),
+                    "actual_age_display": evaluation["ground_truth"].get("age_display")
+                    or str(evaluation["ground_truth"].get("age_value", "n/a")),
+                    "actual_class_ids": actual_class_ids,
+                    "actual_class_labels": [class_labels[item] for item in actual_class_ids],
+                    "predicted_class_id": predicted_class_id,
+                    "predicted_class_label": class_labels.get(predicted_class_id, "n/a"),
+                    "predicted_age_years": evaluation["predicted_age_years"],
+                    "correct_for_clicked_class": predicted_class_id == class_id,
+                    "missed_detection": evaluation["missed_detection"],
+                }
+            )
+
+        correct_count = sum(1 for item in items if item["correct_for_clicked_class"])
+        return {
+            "run_id": run_id,
+            "dataset": dataset_meta,
+            "model": model_entry,
+            "class_id": class_id,
+            "class_label": class_labels[class_id],
+            "settings": settings,
+            "summary": {
+                "total_count": len(items),
+                "correct_count": correct_count,
+            },
+            "items": items,
+        }
+
     def _validate_settings(self, model_ids: list[str], baby_max: int, adult_max: int) -> None:
         if not model_ids:
             raise BulkRunInputError("model_ids must include at least one model.")

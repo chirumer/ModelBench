@@ -7,6 +7,7 @@ const state = {
   pollTimer: null,
   settingsTimer: null,
   settingsRequestToken: 0,
+  activePreview: null,
 };
 
 const bulkModelList = document.getElementById("bulkModelList");
@@ -24,6 +25,12 @@ const statusCurrentModel = document.getElementById("statusCurrentModel");
 const statusTestedImages = document.getElementById("statusTestedImages");
 const statusRemainingImages = document.getElementById("statusRemainingImages");
 const bulkResultsPanels = document.getElementById("bulkResultsPanels");
+const classPreviewModal = document.getElementById("classPreviewModal");
+const classPreviewBackdrop = document.getElementById("classPreviewBackdrop");
+const closeClassPreviewButton = document.getElementById("closeClassPreviewButton");
+const classPreviewTitle = document.getElementById("classPreviewTitle");
+const classPreviewSummary = document.getElementById("classPreviewSummary");
+const classPreviewContent = document.getElementById("classPreviewContent");
 
 function getSelectedModels() {
   return state.models.filter((model) => state.selectedModelIds.includes(model.id));
@@ -211,6 +218,24 @@ function renderResultsPanels() {
       const testedCount = rowData ? rowData.tested_count : 0;
       const totalCount = rowData ? rowData.total_count : dataset.image_count;
       const row = document.createElement("tr");
+      const breakdownMarkup = rowData
+        ? Object.entries(rowData.age_class_breakdown || {})
+            .map(
+              ([classId, entry]) => `
+                <button
+                  class="bulk-breakdown-button"
+                  type="button"
+                  data-action="open-class-preview"
+                  data-dataset-id="${dataset.id}"
+                  data-model-id="${model.id}"
+                  data-class-id="${classId}"
+                >
+                  ${entry.label}: ${entry.correct_count} / ${entry.total_count}
+                </button>
+              `,
+            )
+            .join("")
+        : "";
       row.innerHTML = `
         <td>
           <div class="metric-value">${model.label}</div>
@@ -226,16 +251,7 @@ function renderResultsPanels() {
         <td>
           <div class="metric-value">${rowData ? formatPercent(rowData.age_class_accuracy, rowData.tested_count) : "--"}</div>
           <div class="metric-subtext">${rowData ? `${rowData.age_class_correct_count} correct` : "Waiting to run"}</div>
-          ${
-            rowData
-              ? Object.values(rowData.age_class_breakdown || {})
-                  .map(
-                    (entry) =>
-                      `<div class="metric-subtext">${entry.label}: ${entry.correct_count} / ${entry.total_count}</div>`,
-                  )
-                  .join("")
-              : ""
-          }
+          ${breakdownMarkup}
         </td>
         <td>
           <div class="metric-value">${rowData ? rowData.missed_detection_count : 0}</div>
@@ -251,6 +267,82 @@ function renderResultsPanels() {
     panel.append(heading, table);
     bulkResultsPanels.appendChild(panel);
   });
+}
+
+function closeClassPreview() {
+  state.activePreview = null;
+  classPreviewModal.classList.add("hidden");
+  classPreviewModal.setAttribute("aria-hidden", "true");
+}
+
+async function loadClassPreview() {
+  if (!state.activePreview) {
+    return;
+  }
+
+  const params = new URLSearchParams({
+    dataset_id: state.activePreview.datasetId,
+    model_id: state.activePreview.modelId,
+    class_id: state.activePreview.classId,
+  });
+
+  classPreviewSummary.textContent = "Loading preview…";
+  classPreviewContent.innerHTML = "";
+
+  try {
+    const response = await fetch(`/api/bulk-runs/${state.runId}/class-preview?${params.toString()}`);
+    const payload = await response.json();
+    if (!response.ok) {
+      throw new Error(payload.detail || "Unable to load class preview.");
+    }
+
+    const preview = payload.preview;
+    state.activePreview = {
+      datasetId: preview.dataset.id,
+      modelId: preview.model.id,
+      classId: preview.class_id,
+    };
+    classPreviewTitle.textContent = `${preview.dataset.name} · ${preview.model.label} · ${preview.class_label}`;
+    classPreviewSummary.textContent = `Showing ${preview.summary.total_count} actual ${preview.class_label} images. ${preview.summary.correct_count} predicted as ${preview.class_label}.`;
+
+    if (!preview.items.length) {
+      classPreviewContent.innerHTML = `<div class="bulk-preview-empty">No completed images are available for this class yet.</div>`;
+      return;
+    }
+
+    classPreviewContent.innerHTML = preview.items
+      .map(
+        (item) => `
+          <article class="bulk-preview-card ${item.correct_for_clicked_class ? "correct" : "incorrect"}">
+            <img class="bulk-preview-image" src="${item.image_url}" alt="${item.dataset_image_id}" loading="lazy" />
+            <div class="bulk-preview-copy">
+              <div class="bulk-preview-id">${item.dataset_image_id}</div>
+              <div class="bulk-preview-line">Actual: ${item.actual_class_labels.join(", ")}</div>
+              <div class="bulk-preview-line">Actual age: ${item.actual_age_display ?? "n/a"}</div>
+              <div class="bulk-preview-line">Predicted: ${item.predicted_class_label}</div>
+              <div class="bulk-preview-line">Predicted age: ${item.predicted_age_years ?? "n/a"}</div>
+              ${item.missed_detection ? `<div class="bulk-preview-badge">Missed detection</div>` : ""}
+            </div>
+          </article>
+        `,
+      )
+      .join("");
+  } catch (error) {
+    classPreviewSummary.textContent = error.message;
+    classPreviewContent.innerHTML = `<div class="bulk-preview-empty">Preview unavailable.</div>`;
+  }
+}
+
+async function openClassPreview(datasetId, modelId, classId) {
+  if (!state.runId) {
+    renderRunMessage("Start a bulk run before opening class previews.", true);
+    return;
+  }
+
+  state.activePreview = { datasetId, modelId, classId };
+  classPreviewModal.classList.remove("hidden");
+  classPreviewModal.setAttribute("aria-hidden", "false");
+  await loadClassPreview();
 }
 
 function renderRunMessage(message, isError = false) {
@@ -310,6 +402,9 @@ async function pollRun() {
     state.run = payload.run;
     renderRunStatus();
     renderResultsPanels();
+    if (state.activePreview) {
+      loadClassPreview();
+    }
     setSliderState(false);
     const active = isRunActive();
     setControlsDisabled(active);
@@ -405,6 +500,9 @@ async function pushRunSettings() {
     state.run = payload.run;
     renderRunStatus();
     renderResultsPanels();
+    if (state.activePreview) {
+      loadClassPreview();
+    }
     if (isRunActive()) {
       renderRunMessage("Age classes updated. Saved results are being recomputed while the run continues.");
     } else {
@@ -441,6 +539,25 @@ adultMaxSlider.addEventListener("input", () => {
 });
 
 startBulkRunButton.addEventListener("click", startBulkRun);
+closeClassPreviewButton.addEventListener("click", closeClassPreview);
+classPreviewBackdrop.addEventListener("click", closeClassPreview);
+document.addEventListener("click", (event) => {
+  const trigger = event.target.closest("[data-action='open-class-preview']");
+  if (!trigger) {
+    return;
+  }
+
+  openClassPreview(
+    trigger.dataset.datasetId,
+    trigger.dataset.modelId,
+    trigger.dataset.classId,
+  );
+});
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape" && state.activePreview) {
+    closeClassPreview();
+  }
+});
 
 async function init() {
   try {

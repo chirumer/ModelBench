@@ -240,6 +240,51 @@ class FakeService:
         snapshot["results"]["utkface"]["models"]["wiki"]["age_class_breakdown"]["adult"]["total_count"] = 2
         return snapshot
 
+    def get_bulk_run_class_preview(self, run_id, dataset_id, model_id, class_id):
+        if run_id != "run-123":
+            raise FakeInputError(f"Unknown bulk run '{run_id}'.", status_code=404)
+        if dataset_id != "utkface":
+            raise FakeInputError(f"Unknown dataset '{dataset_id}'.", status_code=404)
+        if model_id != "wiki":
+            raise FakeInputError(f"Unknown model '{model_id}'.", status_code=404)
+        if class_id not in {"baby", "adult", "old"}:
+            raise FakeInputError(f"Unknown class '{class_id}'.", status_code=404)
+        return {
+            "run_id": run_id,
+            "dataset": {
+                "id": "utkface",
+                "name": "UTKFace",
+                "description": "Exact-age face crops.",
+                "image_count": 100,
+            },
+            "model": {
+                "id": "wiki",
+                "label": "SSR-Net (WIKI)",
+                "provider": "ssrnet",
+            },
+            "class_id": class_id,
+            "class_label": "Baby" if class_id == "baby" else ("Man/Woman" if class_id == "adult" else "Old"),
+            "settings": {"baby_max": 12, "adult_max": 59},
+            "summary": {"total_count": 2, "correct_count": 1},
+            "items": [
+                {
+                    "dataset_image_id": "utkface-001",
+                    "image_url": "/static/datasets/utkface/images/utkface-001.jpg",
+                    "thumbnail_url": "/static/datasets/utkface/thumbs/utkface-001.jpg",
+                    "actual_age_display": "9",
+                    "actual_class_ids": [class_id],
+                    "actual_class_labels": [
+                        "Baby" if class_id == "baby" else ("Man/Woman" if class_id == "adult" else "Old")
+                    ],
+                    "predicted_class_id": class_id,
+                    "predicted_class_label": "Baby" if class_id == "baby" else ("Man/Woman" if class_id == "adult" else "Old"),
+                    "predicted_age_years": 9,
+                    "correct_for_clicked_class": True,
+                    "missed_detection": False,
+                }
+            ],
+        }
+
 
 class FakeInputError(Exception):
     def __init__(self, message, status_code):
@@ -422,6 +467,30 @@ def test_patch_bulk_run_settings_returns_404_for_unknown_id():
         response = client.patch(
             "/api/bulk-runs/missing-run/settings",
             json={"baby_max": 10, "adult_max": 50},
+        )
+
+    assert response.status_code == 404
+
+
+def test_get_bulk_run_class_preview_returns_items():
+    with build_client() as client:
+        response = client.get(
+            "/api/bulk-runs/run-123/class-preview",
+            params={"dataset_id": "utkface", "model_id": "wiki", "class_id": "baby"},
+        )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["preview"]["class_id"] == "baby"
+    assert payload["preview"]["items"][0]["correct_for_clicked_class"] is True
+    assert payload["preview"]["items"][0]["actual_age_display"] == "9"
+
+
+def test_get_bulk_run_class_preview_returns_404_for_unknown_class():
+    with build_client() as client:
+        response = client.get(
+            "/api/bulk-runs/run-123/class-preview",
+            params={"dataset_id": "utkface", "model_id": "wiki", "class_id": "missing"},
         )
 
     assert response.status_code == 404

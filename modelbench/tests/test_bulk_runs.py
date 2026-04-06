@@ -38,6 +38,8 @@ class FakeBulkService:
         return [
             {
                 "id": "utkface-001",
+                "image_url": "/static/datasets/utkface/images/utkface-001.jpg",
+                "thumbnail_url": "/static/datasets/utkface/thumbs/utkface-001.jpg",
                 "ground_truth": {
                     "dataset_type": "utkface",
                     "age_kind": "exact",
@@ -49,6 +51,8 @@ class FakeBulkService:
             },
             {
                 "id": "utkface-002",
+                "image_url": "/static/datasets/utkface/images/utkface-002.jpg",
+                "thumbnail_url": "/static/datasets/utkface/thumbs/utkface-002.jpg",
                 "ground_truth": {
                     "dataset_type": "utkface",
                     "age_kind": "exact",
@@ -172,3 +176,22 @@ def test_bulk_run_recomputes_age_metrics_without_rerunning_inference():
     assert row["age_class_breakdown"]["adult"]["correct_count"] == 1
     assert row["age_class_breakdown"]["adult"]["total_count"] == 1
     assert row["age_class_breakdown"]["old"]["total_count"] == 1
+
+
+def test_class_preview_returns_all_actual_class_images():
+    service = FakeBulkService()
+    manager = BulkRunManager(service)
+    snapshot = manager.start_run(["wiki"], baby_max=12, adult_max=59)
+    finished = wait_for_run(manager, snapshot["run_id"])
+
+    preview = manager.get_class_preview(finished["run_id"], "utkface", "wiki", "old")
+
+    assert preview["class_id"] == "old"
+    assert preview["summary"]["total_count"] == 1
+    assert preview["summary"]["correct_count"] == 0
+    assert preview["items"][0]["dataset_image_id"] == "utkface-002"
+    assert preview["items"][0]["actual_age_display"] == "70"
+    assert preview["items"][0]["predicted_class_label"] == "n/a"
+    assert preview["items"][0]["predicted_age_years"] is None
+    assert preview["items"][0]["correct_for_clicked_class"] is False
+    assert preview["items"][0]["missed_detection"] is True
