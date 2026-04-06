@@ -41,6 +41,55 @@
   color: var(--text);
 }
 
+.preset-groups {
+  display: grid;
+  gap: 14px;
+}
+
+.preset-section {
+  display: grid;
+  gap: 8px;
+}
+
+.preset-section h3 {
+  margin: 0;
+  color: var(--text);
+  font-size: 13px;
+}
+
+.preset-card-list {
+  display: grid;
+  gap: 8px;
+}
+
+.preset-card {
+  display: grid;
+  gap: 4px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 10px 12px;
+  background: #fcfcfd;
+  color: var(--text);
+  text-align: left;
+  cursor: pointer;
+}
+
+.preset-card.active {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.preset-card-title {
+  font-weight: 600;
+}
+
+.preset-card-range,
+.preset-card-meta,
+.preset-empty {
+  color: var(--muted);
+  font-size: 12px;
+}
+
 .primary-button {
   width: 100%;
   border: 1px solid var(--accent);

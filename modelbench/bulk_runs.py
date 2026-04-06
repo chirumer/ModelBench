@@ -16,6 +16,8 @@ if TYPE_CHECKING:
 DEFAULT_BABY_MAX = 12
 DEFAULT_ADULT_MAX = 59
 MAX_AGE = 116
+DEFAULT_PRESET_PAIR = (DEFAULT_BABY_MAX, DEFAULT_ADULT_MAX)
+PRESET_THRESHOLD_PAIRS = [(baby_max, adult_max) for baby_max in range(0, MAX_AGE) for adult_max in range(baby_max + 1, MAX_AGE + 1)]
 
 
 class BulkRunInputError(ValueError):
@@ -83,6 +85,93 @@ def choose_evaluation_detection(detections: list[dict]) -> dict | None:
     return detections[0]
 
 
+def actual_age_classes_for_ground_truth(ground_truth: dict, baby_max: int, adult_max: int) -> set[str]:
+    if ground_truth["age_kind"] == "exact":
+        return {class_for_exact_age(int(ground_truth["age_value"]), baby_max, adult_max)}
+    return classes_for_bucket_overlap(str(ground_truth["age_value"]), baby_max, adult_max)
+
+
+def empty_age_class_breakdown(baby_max: int, adult_max: int) -> dict[str, dict]:
+    return {
+        age_class.id: {
+            "label": age_class.label,
+            "correct_count": 0,
+            "total_count": 0,
+            "accuracy": 0.0,
+        }
+        for age_class in build_age_class_ranges(baby_max, adult_max)
+    }
+
+
+def compute_age_metrics_for_evaluations(
+    evaluations: list[dict],
+    baby_max: int,
+    adult_max: int,
+) -> tuple[int, float, dict[str, dict]]:
+    breakdown = empty_age_class_breakdown(baby_max, adult_max)
+    age_correct_count = 0
+
+    for evaluation in evaluations:
+        actual_classes = actual_age_classes_for_ground_truth(
+            evaluation["ground_truth"],
+            baby_max,
+            adult_max,
+        )
+        predicted_class = None
+        if evaluation["predicted_age_years"] is not None:
+            predicted_class = class_for_exact_age(
+                int(evaluation["predicted_age_years"]),
+                baby_max,
+                adult_max,
+            )
+            if predicted_class in actual_classes:
+                age_correct_count += 1
+
+        for class_id in actual_classes:
+            breakdown[class_id]["total_count"] += 1
+            if predicted_class == class_id:
+                breakdown[class_id]["correct_count"] += 1
+
+    for item in breakdown.values():
+        item["accuracy"] = item["correct_count"] / item["total_count"] if item["total_count"] > 0 else 0.0
+
+    tested_count = len(evaluations)
+    accuracy = age_correct_count / tested_count if tested_count > 0 else 0.0
+    return age_correct_count, accuracy, breakdown
+
+
+def compute_age_accuracy_for_evaluations(
+    evaluations: list[dict],
+    baby_max: int,
+    adult_max: int,
+) -> float:
+    tested_count = len(evaluations)
+    if tested_count == 0:
+        return 0.0
+
+    age_correct_count = 0
+    for evaluation in evaluations:
+        actual_classes = actual_age_classes_for_ground_truth(
+            evaluation["ground_truth"],
+            baby_max,
+            adult_max,
+        )
+        if evaluation["predicted_age_years"] is None:
+            continue
+        predicted_class = class_for_exact_age(
+            int(evaluation["predicted_age_years"]),
+            baby_max,
+            adult_max,
+        )
+        if predicted_class in actual_classes:
+            age_correct_count += 1
+    return age_correct_count / tested_count
+
+
+def preset_distance_from_default(baby_max: int, adult_max: int) -> int:
+    return abs(baby_max - DEFAULT_PRESET_PAIR[0]) + abs(adult_max - DEFAULT_PRESET_PAIR[1])
+
+
 class BulkRunManager:
     def __init__(self, service: InferenceService) -> None:
         self._service = service
@@ -127,6 +216,7 @@ class BulkRunManager:
                 raise BulkRunInputError(f"Unknown bulk run '{run_id}'.", status_code=404)
             payload = copy.deepcopy(snapshot)
             payload.pop("_evaluation_records", None)
+            payload.pop("_preset_cache", None)
             return payload
 
     def get_class_preview(self, run_id: str, dataset_id: str, model_id: str, class_id: str) -> dict:
@@ -155,7 +245,7 @@ class BulkRunManager:
         items = []
         for evaluation in evaluations:
             actual_class_ids = sorted(
-                self._actual_age_classes(
+                actual_age_classes_for_ground_truth(
                     evaluation["ground_truth"],
                     settings["baby_max"],
                     settings["adult_max"],
@@ -207,6 +297,31 @@ class BulkRunManager:
             },
             "items": items,
         }
+
+    def get_presets(self, run_id: str) -> dict:
+        with self._lock:
+            snapshot = self._runs.get(run_id)
+            if snapshot is None:
+                raise BulkRunInputError(f"Unknown bulk run '{run_id}'.", status_code=404)
+            settings = copy.deepcopy(snapshot["settings"])
+            version = snapshot["progress"]["tested_images"]
+            cached = snapshot.get("_preset_cache")
+            if cached and cached["version"] == version:
+                return self._serialize_presets(copy.deepcopy(cached["groups"]), settings)
+            datasets = copy.deepcopy(snapshot["datasets"])
+            selected_models = copy.deepcopy(snapshot["selected_models"])
+            evaluation_records = copy.deepcopy(snapshot["_evaluation_records"])
+
+        groups = self._compute_preset_groups(datasets, selected_models, evaluation_records)
+
+        with self._lock:
+            latest = self._runs.get(run_id)
+            if latest is not None and latest["progress"]["tested_images"] == version:
+                latest["_preset_cache"] = {
+                    "version": version,
+                    "groups": copy.deepcopy(groups),
+                }
+        return self._serialize_presets(groups, settings)
 
     def _validate_settings(self, model_ids: list[str], baby_max: int, adult_max: int) -> None:
         if not model_ids:
@@ -267,6 +382,7 @@ class BulkRunManager:
             },
             "results": results,
             "_evaluation_records": evaluation_records,
+            "_preset_cache": None,
         }
 
     def _execute_run(self, run_id: str) -> None:
@@ -387,6 +503,7 @@ class BulkRunManager:
                     settings["baby_max"],
                     settings["adult_max"],
                 )
+                self._runs[run_id]["_preset_cache"] = None
                 self._runs[run_id]["progress"]["tested_images"] += 1
         except Exception as exc:
             with self._lock:
@@ -412,25 +529,13 @@ class BulkRunManager:
                     settings["baby_max"],
                     settings["adult_max"],
                 )
+                self._runs[run_id]["_preset_cache"] = None
                 row["status"] = "error"
                 row["last_error"] = str(exc)
                 self._runs[run_id]["progress"]["tested_images"] += 1
 
-    def _actual_age_classes(self, ground_truth: dict, baby_max: int, adult_max: int) -> set[str]:
-        if ground_truth["age_kind"] == "exact":
-            return {class_for_exact_age(int(ground_truth["age_value"]), baby_max, adult_max)}
-        return classes_for_bucket_overlap(str(ground_truth["age_value"]), baby_max, adult_max)
-
     def _empty_age_class_breakdown(self) -> dict[str, dict]:
-        return {
-            age_class.id: {
-                "label": age_class.label,
-                "correct_count": 0,
-                "total_count": 0,
-                "accuracy": 0.0,
-            }
-            for age_class in build_age_class_ranges(DEFAULT_BABY_MAX, DEFAULT_ADULT_MAX)
-        }
+        return empty_age_class_breakdown(DEFAULT_BABY_MAX, DEFAULT_ADULT_MAX)
 
     def _recompute_all_age_metrics_locked(self, snapshot: dict) -> None:
         baby_max = snapshot["settings"]["baby_max"]
@@ -455,40 +560,149 @@ class BulkRunManager:
     ) -> None:
         row = snapshot["results"][dataset_id]["models"][model_id]
         evaluations = snapshot["_evaluation_records"][dataset_id][model_id]
-        breakdown = {
-            age_class.id: {
-                "label": age_class.label,
-                "correct_count": 0,
-                "total_count": 0,
-                "accuracy": 0.0,
-            }
-            for age_class in build_age_class_ranges(baby_max, adult_max)
-        }
-        age_correct_count = 0
-
-        for evaluation in evaluations:
-            actual_classes = self._actual_age_classes(evaluation["ground_truth"], baby_max, adult_max)
-            predicted_class = None
-            if evaluation["predicted_age_years"] is not None:
-                predicted_class = class_for_exact_age(
-                    int(evaluation["predicted_age_years"]),
-                    baby_max,
-                    adult_max,
-                )
-                if predicted_class in actual_classes:
-                    age_correct_count += 1
-
-            for class_id in actual_classes:
-                breakdown[class_id]["total_count"] += 1
-                if predicted_class == class_id:
-                    breakdown[class_id]["correct_count"] += 1
-
-        for item in breakdown.values():
-            item["accuracy"] = self._ratio(item["correct_count"], item["total_count"])
-
+        age_correct_count, _, breakdown = compute_age_metrics_for_evaluations(
+            evaluations,
+            baby_max,
+            adult_max,
+        )
         row["age_class_correct_count"] = age_correct_count
         row["age_class_accuracy"] = self._ratio(age_correct_count, row["tested_count"])
         row["age_class_breakdown"] = breakdown
+
+    def _compute_preset_groups(self, datasets: list[dict], selected_models: list[dict], evaluation_records: dict) -> dict:
+        rows = []
+        for dataset in datasets:
+            for model in selected_models:
+                evaluations = evaluation_records[dataset["id"]][model["id"]]
+                tested_images = len(evaluations)
+                if tested_images <= 0:
+                    continue
+                rows.append(
+                    {
+                        "dataset_id": dataset["id"],
+                        "dataset_name": dataset["name"],
+                        "model_id": model["id"],
+                        "model_label": model["label"],
+                        "evaluations": evaluations,
+                        "tested_images": tested_images,
+                    }
+                )
+
+        if not rows:
+            return {
+                "dataset_presets": [],
+                "model_presets": [],
+                "combination_presets": [],
+            }
+
+        row_scores = []
+        for row in rows:
+            row_scores.append(
+                [
+                    compute_age_accuracy_for_evaluations(row["evaluations"], baby_max, adult_max)
+                    for baby_max, adult_max in PRESET_THRESHOLD_PAIRS
+                ]
+            )
+
+        dataset_groups: dict[str, list[int]] = {}
+        model_groups: dict[str, list[int]] = {}
+        for index, row in enumerate(rows):
+            dataset_groups.setdefault(row["dataset_id"], []).append(index)
+            model_groups.setdefault(row["model_id"], []).append(index)
+
+        dataset_presets = [
+            self._build_best_preset(
+                scope_type="dataset",
+                scope_label=row_group[0]["dataset_name"],
+                dataset_id=dataset_id,
+                model_id=None,
+                row_indices=indices,
+                rows=rows,
+                row_scores=row_scores,
+            )
+            for dataset_id, indices in dataset_groups.items()
+            for row_group in [[rows[index] for index in indices]]
+        ]
+        model_presets = [
+            self._build_best_preset(
+                scope_type="model",
+                scope_label=row_group[0]["model_label"],
+                dataset_id=None,
+                model_id=model_id,
+                row_indices=indices,
+                rows=rows,
+                row_scores=row_scores,
+            )
+            for model_id, indices in model_groups.items()
+            for row_group in [[rows[index] for index in indices]]
+        ]
+        combination_presets = [
+            self._build_best_preset(
+                scope_type="combination",
+                scope_label=f"{row['dataset_name']} · {row['model_label']}",
+                dataset_id=row["dataset_id"],
+                model_id=row["model_id"],
+                row_indices=[index],
+                rows=rows,
+                row_scores=row_scores,
+            )
+            for index, row in enumerate(rows)
+        ]
+
+        return {
+            "dataset_presets": dataset_presets,
+            "model_presets": model_presets,
+            "combination_presets": combination_presets,
+        }
+
+    def _build_best_preset(
+        self,
+        *,
+        scope_type: str,
+        scope_label: str,
+        dataset_id: str | None,
+        model_id: str | None,
+        row_indices: list[int],
+        rows: list[dict],
+        row_scores: list[list[float]],
+    ) -> dict:
+        best_index = 0
+        best_key = None
+        for pair_index, (baby_max, adult_max) in enumerate(PRESET_THRESHOLD_PAIRS):
+            score = sum(row_scores[row_index][pair_index] for row_index in row_indices) / len(row_indices)
+            key = (
+                score,
+                -preset_distance_from_default(baby_max, adult_max),
+                -baby_max,
+                -adult_max,
+            )
+            if best_key is None or key > best_key:
+                best_key = key
+                best_index = pair_index
+
+        baby_max, adult_max = PRESET_THRESHOLD_PAIRS[best_index]
+        return {
+            "id": f"{scope_type}:{dataset_id or 'all'}:{model_id or 'all'}",
+            "scope_type": scope_type,
+            "label": scope_label,
+            "dataset_id": dataset_id,
+            "model_id": model_id,
+            "baby_max": baby_max,
+            "adult_max": adult_max,
+            "score_accuracy": best_key[0] if best_key is not None else 0.0,
+            "tested_images": sum(rows[row_index]["tested_images"] for row_index in row_indices),
+        }
+
+    def _serialize_presets(self, groups: dict, settings: dict) -> dict:
+        payload = copy.deepcopy(groups)
+        for group_name in ("dataset_presets", "model_presets", "combination_presets"):
+            for item in payload[group_name]:
+                item["is_active"] = (
+                    item["baby_max"] == settings["baby_max"]
+                    and item["adult_max"] == settings["adult_max"]
+                )
+        payload["settings"] = settings
+        return payload
 
     @staticmethod
     def _ratio(correct: int, tested: int) -> float:

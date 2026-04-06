@@ -166,6 +166,15 @@ def create_app(service_factory: Callable[[], object] | None = None) -> FastAPI:
             detail = getattr(exc, "message", "Bulk inference failed.")
             raise HTTPException(status_code=status_code, detail=detail) from exc
 
+    @app.get("/api/bulk-runs/{run_id}/presets")
+    async def get_bulk_run_presets(request: Request, run_id: str) -> dict:
+        try:
+            return {"presets": request.app.state.service.get_bulk_run_presets(run_id)}
+        except Exception as exc:
+            status_code = getattr(exc, "status_code", 500)
+            detail = getattr(exc, "message", "Bulk inference failed.")
+            raise HTTPException(status_code=status_code, detail=detail) from exc
+
     return app
 
 

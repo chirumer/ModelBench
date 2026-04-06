@@ -103,6 +103,106 @@ class FakeBulkService:
         }
 
 
+class FakePresetBulkService:
+    def __init__(self):
+        self.analysis_calls = 0
+
+    def list_models(self):
+        return [
+            {"id": "wiki", "label": "SSR-Net (WIKI)", "description": "WIKI", "provider": "ssrnet", "family": "ssrnet"},
+            {"id": "deepface", "label": "DeepFace", "description": "DeepFace", "provider": "deepface", "family": "demography"},
+        ]
+
+    def list_datasets(self):
+        return [
+            {"id": "utkface", "name": "UTKFace", "description": "Exact-age", "image_count": 1},
+            {"id": "fairface", "name": "FairFace", "description": "Bucket-age", "image_count": 1},
+        ]
+
+    def get_dataset_records(self, dataset_id):
+        if dataset_id == "utkface":
+            return [
+                {
+                    "id": "utkface-001",
+                    "image_url": "/static/datasets/utkface/images/utkface-001.jpg",
+                    "thumbnail_url": "/static/datasets/utkface/thumbs/utkface-001.jpg",
+                    "ground_truth": {
+                        "dataset_type": "utkface",
+                        "age_kind": "exact",
+                        "age_display": "10",
+                        "age_value": 10,
+                        "gender_display": "Male",
+                        "gender_value": "male",
+                    },
+                }
+            ]
+        return [
+            {
+                "id": "fairface-001",
+                "image_url": "/static/datasets/fairface/images/fairface-001.jpg",
+                "thumbnail_url": "/static/datasets/fairface/thumbs/fairface-001.jpg",
+                "ground_truth": {
+                    "dataset_type": "fairface",
+                    "age_kind": "bucket",
+                    "age_display": "70+",
+                    "age_value": "70+",
+                    "gender_display": "Female",
+                    "gender_value": "female",
+                },
+            }
+        ]
+
+    def analyze_dataset_image(self, dataset_image_id, model_id):
+        self.analysis_calls += 1
+        if dataset_image_id == "utkface-001" and model_id == "wiki":
+            return {
+                "ground_truth": {
+                    "dataset_type": "utkface",
+                    "age_kind": "exact",
+                    "age_display": "10",
+                    "age_value": 10,
+                    "gender_display": "Male",
+                    "gender_value": "male",
+                },
+                "detections": [{"face_confidence": 0.9, "age_years": 10, "gender_label": "male"}],
+            }
+        if dataset_image_id == "utkface-001" and model_id == "deepface":
+            return {
+                "ground_truth": {
+                    "dataset_type": "utkface",
+                    "age_kind": "exact",
+                    "age_display": "10",
+                    "age_value": 10,
+                    "gender_display": "Male",
+                    "gender_value": "male",
+                },
+                "detections": [],
+            }
+        if dataset_image_id == "fairface-001" and model_id == "wiki":
+            return {
+                "ground_truth": {
+                    "dataset_type": "fairface",
+                    "age_kind": "bucket",
+                    "age_display": "70+",
+                    "age_value": "70+",
+                    "gender_display": "Female",
+                    "gender_value": "female",
+                },
+                "detections": [],
+            }
+        return {
+            "ground_truth": {
+                "dataset_type": "fairface",
+                "age_kind": "bucket",
+                "age_display": "70+",
+                "age_value": "70+",
+                "gender_display": "Female",
+                "gender_value": "female",
+            },
+            "detections": [{"face_confidence": 0.9, "age_years": 70, "gender_label": "female"}],
+        }
+
+
 def wait_for_run(manager, run_id, timeout=3.0):
     deadline = time.time() + timeout
     while time.time() < deadline:
@@ -195,3 +295,35 @@ def test_class_preview_returns_all_actual_class_images():
     assert preview["items"][0]["predicted_age_years"] is None
     assert preview["items"][0]["correct_for_clicked_class"] is False
     assert preview["items"][0]["missed_detection"] is True
+
+
+def test_bulk_run_presets_return_dataset_model_and_combination_groups():
+    service = FakePresetBulkService()
+    manager = BulkRunManager(service)
+    snapshot = manager.start_run(["wiki", "deepface"], baby_max=12, adult_max=59)
+    finished = wait_for_run(manager, snapshot["run_id"])
+
+    presets = manager.get_presets(finished["run_id"])
+
+    assert presets["settings"] == {"baby_max": 12, "adult_max": 59}
+    assert len(presets["dataset_presets"]) == 2
+    assert len(presets["model_presets"]) == 2
+    assert len(presets["combination_presets"]) == 4
+
+
+def test_bulk_run_presets_average_accuracy_across_rows_and_tie_break_to_default():
+    service = FakePresetBulkService()
+    manager = BulkRunManager(service)
+    snapshot = manager.start_run(["wiki", "deepface"], baby_max=12, adult_max=59)
+    finished = wait_for_run(manager, snapshot["run_id"])
+
+    presets = manager.get_presets(finished["run_id"])
+    utkface_preset = next(item for item in presets["dataset_presets"] if item["dataset_id"] == "utkface")
+    wiki_preset = next(item for item in presets["model_presets"] if item["model_id"] == "wiki")
+
+    assert utkface_preset["score_accuracy"] == 0.5
+    assert utkface_preset["tested_images"] == 2
+    assert utkface_preset["baby_max"] == 12
+    assert utkface_preset["adult_max"] == 59
+    assert wiki_preset["score_accuracy"] == 0.5
+    assert wiki_preset["tested_images"] == 2

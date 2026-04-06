@@ -4,6 +4,7 @@ const state = {
   selectedModelIds: [],
   runId: null,
   run: null,
+  presets: null,
   pollTimer: null,
   settingsTimer: null,
   settingsRequestToken: 0,
@@ -17,6 +18,7 @@ const adultMaxSlider = document.getElementById("adultMaxSlider");
 const babyMaxValue = document.getElementById("babyMaxValue");
 const adultMaxValue = document.getElementById("adultMaxValue");
 const ageClassSummary = document.getElementById("ageClassSummary");
+const presetGroups = document.getElementById("presetGroups");
 const startBulkRunButton = document.getElementById("startBulkRunButton");
 const bulkRunMessage = document.getElementById("bulkRunMessage");
 const bulkRunStatusBadge = document.getElementById("bulkRunStatusBadge");
@@ -94,6 +96,13 @@ function hasRunSnapshot() {
   return Boolean(state.runId && state.run);
 }
 
+function getCurrentSliderSettings() {
+  return {
+    babyMax: Number(babyMaxSlider.value),
+    adultMax: Number(adultMaxSlider.value),
+  };
+}
+
 function renderModelList() {
   bulkModelList.innerHTML = "";
 
@@ -149,6 +158,69 @@ function renderModelDescription() {
   }
 
   bulkModelDescription.textContent = `${selectedModels.length} model${selectedModels.length === 1 ? "" : "s"} selected: ${selectedModels.map((model) => model.label).join(", ")}.`;
+}
+
+function formatPresetRange(preset) {
+  return `Baby 0-${preset.baby_max} · Man/Woman ${preset.baby_max + 1}-${preset.adult_max} · Old ${preset.adult_max + 1}+`;
+}
+
+function renderPresetSection(title, presets) {
+  if (!presets.length) {
+    return "";
+  }
+
+  const { babyMax, adultMax } = getCurrentSliderSettings();
+  const cards = presets
+    .map((preset) => {
+      const active = preset.baby_max === babyMax && preset.adult_max === adultMax;
+      return `
+        <button
+          class="preset-card ${active ? "active" : ""}"
+          type="button"
+          data-action="apply-preset"
+          data-baby-max="${preset.baby_max}"
+          data-adult-max="${preset.adult_max}"
+        >
+          <div class="preset-card-title">${preset.label}</div>
+          <div class="preset-card-range">${formatPresetRange(preset)}</div>
+          <div class="preset-card-meta">Accuracy ${(preset.score_accuracy * 100).toFixed(1)}%</div>
+          <div class="preset-card-meta">${preset.tested_images} tested images</div>
+        </button>
+      `;
+    })
+    .join("");
+
+  return `
+    <section class="preset-section">
+      <h3>${title}</h3>
+      <div class="preset-card-list">${cards}</div>
+    </section>
+  `;
+}
+
+function renderPresetGroups() {
+  if (!hasRunSnapshot()) {
+    presetGroups.innerHTML = `<div class="preset-empty">Run bulk inference to compute live preset recommendations.</div>`;
+    return;
+  }
+
+  if (!state.presets) {
+    presetGroups.innerHTML = `<div class="preset-empty">Computing preset recommendations from saved results…</div>`;
+    return;
+  }
+
+  const sections = [
+    renderPresetSection("By dataset", state.presets.dataset_presets || []),
+    renderPresetSection("By model", state.presets.model_presets || []),
+    renderPresetSection("By model + dataset", state.presets.combination_presets || []),
+  ].filter(Boolean);
+
+  if (!sections.length) {
+    presetGroups.innerHTML = `<div class="preset-empty">Preset recommendations will appear as soon as images finish processing.</div>`;
+    return;
+  }
+
+  presetGroups.innerHTML = sections.join("");
 }
 
 function renderRunStatus() {
@@ -267,6 +339,26 @@ function renderResultsPanels() {
     panel.append(heading, table);
     bulkResultsPanels.appendChild(panel);
   });
+}
+
+async function loadPresets() {
+  if (!state.runId) {
+    state.presets = null;
+    renderPresetGroups();
+    return;
+  }
+
+  try {
+    const response = await fetch(`/api/bulk-runs/${state.runId}/presets`);
+    const payload = await response.json();
+    if (!response.ok) {
+      throw new Error(payload.detail || "Unable to load presets.");
+    }
+    state.presets = payload.presets;
+    renderPresetGroups();
+  } catch (error) {
+    presetGroups.innerHTML = `<div class="preset-empty">${error.message}</div>`;
+  }
 }
 
 function closeClassPreview() {
@@ -402,6 +494,7 @@ async function pollRun() {
     state.run = payload.run;
     renderRunStatus();
     renderResultsPanels();
+    loadPresets();
     if (state.activePreview) {
       loadClassPreview();
     }
@@ -455,8 +548,11 @@ async function startBulkRun() {
     stopPolling();
     state.runId = payload.run_id;
     state.run = payload.run;
+    state.presets = null;
     renderRunStatus();
     renderResultsPanels();
+    renderPresetGroups();
+    loadPresets();
     setSliderState(false);
     if (isRunActive()) {
       state.pollTimer = window.setTimeout(pollRun, 1000);
@@ -500,6 +596,7 @@ async function pushRunSettings() {
     state.run = payload.run;
     renderRunStatus();
     renderResultsPanels();
+    renderPresetGroups();
     if (state.activePreview) {
       loadClassPreview();
     }
@@ -526,15 +623,25 @@ function scheduleSettingsUpdate() {
   }, 200);
 }
 
+function applyPreset(babyMax, adultMax) {
+  babyMaxSlider.value = String(babyMax);
+  adultMaxSlider.value = String(adultMax);
+  renderAgeClassSummary();
+  renderPresetGroups();
+  scheduleSettingsUpdate();
+}
+
 babyMaxSlider.addEventListener("input", () => {
   normalizeSliderValues("baby");
   renderAgeClassSummary();
+  renderPresetGroups();
   scheduleSettingsUpdate();
 });
 
 adultMaxSlider.addEventListener("input", () => {
   normalizeSliderValues("adult");
   renderAgeClassSummary();
+  renderPresetGroups();
   scheduleSettingsUpdate();
 });
 
@@ -543,15 +650,22 @@ closeClassPreviewButton.addEventListener("click", closeClassPreview);
 classPreviewBackdrop.addEventListener("click", closeClassPreview);
 document.addEventListener("click", (event) => {
   const trigger = event.target.closest("[data-action='open-class-preview']");
-  if (!trigger) {
+  if (trigger) {
+    openClassPreview(
+      trigger.dataset.datasetId,
+      trigger.dataset.modelId,
+      trigger.dataset.classId,
+    );
     return;
   }
 
-  openClassPreview(
-    trigger.dataset.datasetId,
-    trigger.dataset.modelId,
-    trigger.dataset.classId,
-  );
+  const presetTrigger = event.target.closest("[data-action='apply-preset']");
+  if (presetTrigger) {
+    applyPreset(
+      Number(presetTrigger.dataset.babyMax),
+      Number(presetTrigger.dataset.adultMax),
+    );
+  }
 });
 document.addEventListener("keydown", (event) => {
   if (event.key === "Escape" && state.activePreview) {
@@ -567,6 +681,7 @@ async function init() {
     renderModelDescription();
     renderRunStatus();
     renderResultsPanels();
+    renderPresetGroups();
     renderRunMessage("Choose models and age classes, then start a run.");
     setSliderState(false);
   } catch (error) {

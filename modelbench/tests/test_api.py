@@ -285,6 +285,29 @@ class FakeService:
             ],
         }
 
+    def get_bulk_run_presets(self, run_id):
+        if run_id != "run-123":
+            raise FakeInputError(f"Unknown bulk run '{run_id}'.", status_code=404)
+        return {
+            "settings": {"baby_max": 12, "adult_max": 59},
+            "dataset_presets": [
+                {
+                    "id": "dataset:utkface:all",
+                    "scope_type": "dataset",
+                    "label": "UTKFace",
+                    "dataset_id": "utkface",
+                    "model_id": None,
+                    "baby_max": 12,
+                    "adult_max": 59,
+                    "score_accuracy": 0.75,
+                    "tested_images": 4,
+                    "is_active": True,
+                }
+            ],
+            "model_presets": [],
+            "combination_presets": [],
+        }
+
 
 class FakeInputError(Exception):
     def __init__(self, message, status_code):
@@ -492,5 +515,22 @@ def test_get_bulk_run_class_preview_returns_404_for_unknown_class():
             "/api/bulk-runs/run-123/class-preview",
             params={"dataset_id": "utkface", "model_id": "wiki", "class_id": "missing"},
         )
+
+    assert response.status_code == 404
+
+
+def test_get_bulk_run_presets_returns_groups():
+    with build_client() as client:
+        response = client.get("/api/bulk-runs/run-123/presets")
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["presets"]["settings"] == {"baby_max": 12, "adult_max": 59}
+    assert payload["presets"]["dataset_presets"][0]["label"] == "UTKFace"
+
+
+def test_get_bulk_run_presets_returns_404_for_unknown_run():
+    with build_client() as client:
+        response = client.get("/api/bulk-runs/missing-run/presets")
 
     assert response.status_code == 404
