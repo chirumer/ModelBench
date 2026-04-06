@@ -52,6 +52,26 @@ class FakeService:
                                 "gender_accuracy": 0.75,
                                 "age_class_correct_count": 2,
                                 "age_class_accuracy": 0.5,
+                                "age_class_breakdown": {
+                                    "baby": {
+                                        "label": "Baby",
+                                        "correct_count": 1,
+                                        "total_count": 2,
+                                        "accuracy": 0.5,
+                                    },
+                                    "adult": {
+                                        "label": "Man/Woman",
+                                        "correct_count": 1,
+                                        "total_count": 1,
+                                        "accuracy": 1.0,
+                                    },
+                                    "old": {
+                                        "label": "Old",
+                                        "correct_count": 0,
+                                        "total_count": 1,
+                                        "accuracy": 0.0,
+                                    },
+                                },
                                 "missed_detection_count": 1,
                                 "status": "running",
                                 "last_error": None,
@@ -209,6 +229,17 @@ class FakeService:
             raise FakeInputError(f"Unknown bulk run '{run_id}'.", status_code=404)
         return snapshot
 
+    def update_bulk_run_settings(self, run_id, baby_max, adult_max):
+        snapshot = self._bulk_runs.get(run_id)
+        if snapshot is None:
+            raise FakeInputError(f"Unknown bulk run '{run_id}'.", status_code=404)
+        if baby_max < 0 or baby_max >= adult_max or adult_max > 116:
+            raise FakeInputError("Use slider values where 0 <= baby_max < adult_max <= 116.", status_code=400)
+        snapshot["settings"] = {"baby_max": baby_max, "adult_max": adult_max}
+        snapshot["results"]["utkface"]["models"]["wiki"]["age_class_accuracy"] = 0.25
+        snapshot["results"]["utkface"]["models"]["wiki"]["age_class_breakdown"]["adult"]["total_count"] = 2
+        return snapshot
+
 
 class FakeInputError(Exception):
     def __init__(self, message, status_code):
@@ -358,5 +389,39 @@ def test_create_bulk_run_returns_snapshot():
 def test_get_bulk_run_returns_404_for_unknown_id():
     with build_client() as client:
         response = client.get("/api/bulk-runs/missing-run")
+
+    assert response.status_code == 404
+
+
+def test_patch_bulk_run_settings_updates_snapshot():
+    with build_client() as client:
+        response = client.patch(
+            "/api/bulk-runs/run-123/settings",
+            json={"baby_max": 10, "adult_max": 50},
+        )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["run"]["settings"] == {"baby_max": 10, "adult_max": 50}
+    assert payload["run"]["results"]["utkface"]["models"]["wiki"]["age_class_accuracy"] == 0.25
+
+
+def test_patch_bulk_run_settings_rejects_invalid_range():
+    with build_client() as client:
+        response = client.patch(
+            "/api/bulk-runs/run-123/settings",
+            json={"baby_max": 60, "adult_max": 50},
+        )
+
+    assert response.status_code == 400
+    assert "0 <= baby_max < adult_max <= 116" in response.json()["detail"]
+
+
+def test_patch_bulk_run_settings_returns_404_for_unknown_id():
+    with build_client() as client:
+        response = client.patch(
+            "/api/bulk-runs/missing-run/settings",
+            json={"baby_max": 10, "adult_max": 50},
+        )
 
     assert response.status_code == 404

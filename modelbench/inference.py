@@ -149,6 +149,9 @@ class InferenceService:
     def get_bulk_run(self, run_id: str) -> dict:
         return self._bulk_run_manager.get_run(run_id)
 
+    def update_bulk_run_settings(self, run_id: str, baby_max: int, adult_max: int) -> dict:
+        return self._bulk_run_manager.update_settings(run_id, baby_max, adult_max)
+
     def analyze_dataset_image(self, dataset_image_id: str, model_id: str) -> dict:
         dataset_id, record = self._lookup_dataset_image(dataset_image_id)
         image_path = Path(record["image_path"])

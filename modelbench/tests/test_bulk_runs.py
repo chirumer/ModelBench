@@ -9,6 +9,9 @@ from modelbench.bulk_runs import (
 
 
 class FakeBulkService:
+    def __init__(self):
+        self.analysis_calls = 0
+
     def list_models(self):
         return [
             {
@@ -58,6 +61,7 @@ class FakeBulkService:
         ]
 
     def analyze_dataset_image(self, dataset_image_id, model_id):
+        self.analysis_calls += 1
         assert model_id == "wiki"
         if dataset_image_id == "utkface-001":
             return {
@@ -127,7 +131,8 @@ def test_choose_evaluation_detection_prefers_highest_confidence():
 
 
 def test_bulk_run_tracks_accuracy_and_missed_detections():
-    manager = BulkRunManager(FakeBulkService())
+    service = FakeBulkService()
+    manager = BulkRunManager(service)
     snapshot = manager.start_run(["wiki"], baby_max=12, adult_max=59)
     finished = wait_for_run(manager, snapshot["run_id"])
 
@@ -140,4 +145,30 @@ def test_bulk_run_tracks_accuracy_and_missed_detections():
     assert row["missed_detection_count"] == 1
     assert row["gender_accuracy"] == 0.5
     assert row["age_class_accuracy"] == 0.5
+    assert row["age_class_breakdown"]["baby"]["correct_count"] == 1
+    assert row["age_class_breakdown"]["baby"]["total_count"] == 1
+    assert row["age_class_breakdown"]["old"]["correct_count"] == 0
+    assert row["age_class_breakdown"]["old"]["total_count"] == 1
     assert row["status"] == "done"
+    assert service.analysis_calls == 2
+
+
+def test_bulk_run_recomputes_age_metrics_without_rerunning_inference():
+    service = FakeBulkService()
+    manager = BulkRunManager(service)
+    snapshot = manager.start_run(["wiki"], baby_max=12, adult_max=59)
+    finished = wait_for_run(manager, snapshot["run_id"])
+
+    updated = manager.update_settings(finished["run_id"], baby_max=5, adult_max=50)
+    row = updated["results"]["utkface"]["models"]["wiki"]
+
+    assert service.analysis_calls == 2
+    assert updated["settings"] == {"baby_max": 5, "adult_max": 50}
+    assert row["gender_correct_count"] == 1
+    assert row["gender_accuracy"] == 0.5
+    assert row["age_class_correct_count"] == 1
+    assert row["age_class_accuracy"] == 0.5
+    assert row["age_class_breakdown"]["baby"]["total_count"] == 0
+    assert row["age_class_breakdown"]["adult"]["correct_count"] == 1
+    assert row["age_class_breakdown"]["adult"]["total_count"] == 1
+    assert row["age_class_breakdown"]["old"]["total_count"] == 1

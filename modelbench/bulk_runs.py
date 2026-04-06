@@ -109,23 +109,39 @@ class BulkRunManager:
         worker.start()
         return self.get_run(run_id)
 
+    def update_settings(self, run_id: str, baby_max: int, adult_max: int) -> dict:
+        self._validate_range_settings(baby_max, adult_max)
+        with self._lock:
+            snapshot = self._runs.get(run_id)
+            if snapshot is None:
+                raise BulkRunInputError(f"Unknown bulk run '{run_id}'.", status_code=404)
+            snapshot["settings"]["baby_max"] = baby_max
+            snapshot["settings"]["adult_max"] = adult_max
+            self._recompute_all_age_metrics_locked(snapshot)
+        return self.get_run(run_id)
+
     def get_run(self, run_id: str) -> dict:
         with self._lock:
             snapshot = self._runs.get(run_id)
             if snapshot is None:
                 raise BulkRunInputError(f"Unknown bulk run '{run_id}'.", status_code=404)
-            return copy.deepcopy(snapshot)
+            payload = copy.deepcopy(snapshot)
+            payload.pop("_evaluation_records", None)
+            return payload
 
     def _validate_settings(self, model_ids: list[str], baby_max: int, adult_max: int) -> None:
         if not model_ids:
             raise BulkRunInputError("model_ids must include at least one model.")
-        if baby_max < 0 or adult_max > MAX_AGE or baby_max >= adult_max:
-            raise BulkRunInputError("Use slider values where 0 <= baby_max < adult_max <= 116.")
+        self._validate_range_settings(baby_max, adult_max)
 
         available_models = {entry["id"] for entry in self._service.list_models()}
         unknown = [model_id for model_id in model_ids if model_id not in available_models]
         if unknown:
             raise BulkRunInputError(f"Unknown model ids: {', '.join(unknown)}.")
+
+    def _validate_range_settings(self, baby_max: int, adult_max: int) -> None:
+        if baby_max < 0 or adult_max > MAX_AGE or baby_max >= adult_max:
+            raise BulkRunInputError("Use slider values where 0 <= baby_max < adult_max <= 116.")
 
     def _build_snapshot(self, model_ids: list[str], baby_max: int, adult_max: int) -> dict:
         models_by_id = {entry["id"]: entry for entry in self._service.list_models()}
@@ -134,8 +150,10 @@ class BulkRunManager:
         total_images = sum(dataset["image_count"] for dataset in datasets) * len(selected_models)
 
         results = {}
+        evaluation_records = {}
         for dataset in datasets:
             dataset_models = {}
+            dataset_records = {}
             for model in selected_models:
                 dataset_models[model["id"]] = {
                     "tested_count": 0,
@@ -144,11 +162,14 @@ class BulkRunManager:
                     "gender_accuracy": 0.0,
                     "age_class_correct_count": 0,
                     "age_class_accuracy": 0.0,
+                    "age_class_breakdown": self._empty_age_class_breakdown(),
                     "missed_detection_count": 0,
                     "status": "queued",
                     "last_error": None,
                 }
+                dataset_records[model["id"]] = []
             results[dataset["id"]] = {"dataset": copy.deepcopy(dataset), "models": dataset_models}
+            evaluation_records[dataset["id"]] = dataset_records
 
         return {
             "run_id": uuid4().hex,
@@ -166,6 +187,7 @@ class BulkRunManager:
                 "current_model_id": None,
             },
             "results": results,
+            "_evaluation_records": evaluation_records,
         }
 
     def _execute_run(self, run_id: str) -> None:
@@ -176,7 +198,6 @@ class BulkRunManager:
 
         try:
             run_snapshot = self.get_run(run_id)
-            settings = run_snapshot["settings"]
             selected_models = run_snapshot["selected_models"]
             datasets = run_snapshot["datasets"]
 
@@ -194,8 +215,6 @@ class BulkRunManager:
                             dataset_id=dataset_id,
                             record=record,
                             model_id=model_id,
-                            baby_max=settings["baby_max"],
-                            adult_max=settings["adult_max"],
                         )
 
                 self._mark_dataset_done(run_id, dataset_id)
@@ -245,8 +264,6 @@ class BulkRunManager:
         dataset_id: str,
         record: dict,
         model_id: str,
-        baby_max: int,
-        adult_max: int,
     ) -> None:
         row = None
         try:
@@ -255,39 +272,66 @@ class BulkRunManager:
             detection = choose_evaluation_detection(payload["detections"])
 
             gender_correct = False
-            age_correct = False
             missed_detection = detection is None
+            predicted_age_years = None
+            predicted_gender_label = None
 
             if detection is not None:
-                gender_correct = detection.get("gender_label") == ground_truth.get("gender_value")
-                predicted_class = class_for_exact_age(int(detection.get("age_years", 0)), baby_max, adult_max)
-                actual_classes = self._actual_age_classes(ground_truth, baby_max, adult_max)
-                age_correct = predicted_class in actual_classes
+                predicted_gender_label = detection.get("gender_label")
+                gender_correct = predicted_gender_label == ground_truth.get("gender_value")
+                if detection.get("age_years") is not None:
+                    predicted_age_years = int(detection["age_years"])
 
             with self._lock:
                 row = self._runs[run_id]["results"][dataset_id]["models"][model_id]
+                evaluations = self._runs[run_id]["_evaluation_records"][dataset_id][model_id]
+                evaluations.append(
+                    {
+                        "dataset_image_id": record["id"],
+                        "ground_truth": copy.deepcopy(ground_truth),
+                        "predicted_age_years": predicted_age_years,
+                        "predicted_gender_label": predicted_gender_label,
+                        "missed_detection": missed_detection,
+                    }
+                )
                 row["tested_count"] += 1
                 if gender_correct:
                     row["gender_correct_count"] += 1
-                if age_correct:
-                    row["age_class_correct_count"] += 1
                 if missed_detection:
                     row["missed_detection_count"] += 1
                 row["gender_accuracy"] = self._ratio(row["gender_correct_count"], row["tested_count"])
-                row["age_class_accuracy"] = self._ratio(
-                    row["age_class_correct_count"],
-                    row["tested_count"],
+                settings = self._runs[run_id]["settings"]
+                self._recompute_row_age_metrics_locked(
+                    self._runs[run_id],
+                    dataset_id,
+                    model_id,
+                    settings["baby_max"],
+                    settings["adult_max"],
                 )
                 self._runs[run_id]["progress"]["tested_images"] += 1
         except Exception as exc:
             with self._lock:
                 row = self._runs[run_id]["results"][dataset_id]["models"][model_id]
+                evaluations = self._runs[run_id]["_evaluation_records"][dataset_id][model_id]
+                evaluations.append(
+                    {
+                        "dataset_image_id": record["id"],
+                        "ground_truth": copy.deepcopy(record["ground_truth"]),
+                        "predicted_age_years": None,
+                        "predicted_gender_label": None,
+                        "missed_detection": True,
+                    }
+                )
                 row["tested_count"] += 1
                 row["missed_detection_count"] += 1
                 row["gender_accuracy"] = self._ratio(row["gender_correct_count"], row["tested_count"])
-                row["age_class_accuracy"] = self._ratio(
-                    row["age_class_correct_count"],
-                    row["tested_count"],
+                settings = self._runs[run_id]["settings"]
+                self._recompute_row_age_metrics_locked(
+                    self._runs[run_id],
+                    dataset_id,
+                    model_id,
+                    settings["baby_max"],
+                    settings["adult_max"],
                 )
                 row["status"] = "error"
                 row["last_error"] = str(exc)
@@ -297,6 +341,75 @@ class BulkRunManager:
         if ground_truth["age_kind"] == "exact":
             return {class_for_exact_age(int(ground_truth["age_value"]), baby_max, adult_max)}
         return classes_for_bucket_overlap(str(ground_truth["age_value"]), baby_max, adult_max)
+
+    def _empty_age_class_breakdown(self) -> dict[str, dict]:
+        return {
+            age_class.id: {
+                "label": age_class.label,
+                "correct_count": 0,
+                "total_count": 0,
+                "accuracy": 0.0,
+            }
+            for age_class in build_age_class_ranges(DEFAULT_BABY_MAX, DEFAULT_ADULT_MAX)
+        }
+
+    def _recompute_all_age_metrics_locked(self, snapshot: dict) -> None:
+        baby_max = snapshot["settings"]["baby_max"]
+        adult_max = snapshot["settings"]["adult_max"]
+        for dataset_id, dataset_payload in snapshot["results"].items():
+            for model_id in dataset_payload["models"]:
+                self._recompute_row_age_metrics_locked(
+                    snapshot,
+                    dataset_id,
+                    model_id,
+                    baby_max,
+                    adult_max,
+                )
+
+    def _recompute_row_age_metrics_locked(
+        self,
+        snapshot: dict,
+        dataset_id: str,
+        model_id: str,
+        baby_max: int,
+        adult_max: int,
+    ) -> None:
+        row = snapshot["results"][dataset_id]["models"][model_id]
+        evaluations = snapshot["_evaluation_records"][dataset_id][model_id]
+        breakdown = {
+            age_class.id: {
+                "label": age_class.label,
+                "correct_count": 0,
+                "total_count": 0,
+                "accuracy": 0.0,
+            }
+            for age_class in build_age_class_ranges(baby_max, adult_max)
+        }
+        age_correct_count = 0
+
+        for evaluation in evaluations:
+            actual_classes = self._actual_age_classes(evaluation["ground_truth"], baby_max, adult_max)
+            predicted_class = None
+            if evaluation["predicted_age_years"] is not None:
+                predicted_class = class_for_exact_age(
+                    int(evaluation["predicted_age_years"]),
+                    baby_max,
+                    adult_max,
+                )
+                if predicted_class in actual_classes:
+                    age_correct_count += 1
+
+            for class_id in actual_classes:
+                breakdown[class_id]["total_count"] += 1
+                if predicted_class == class_id:
+                    breakdown[class_id]["correct_count"] += 1
+
+        for item in breakdown.values():
+            item["accuracy"] = self._ratio(item["correct_count"], item["total_count"])
+
+        row["age_class_correct_count"] = age_correct_count
+        row["age_class_accuracy"] = self._ratio(age_correct_count, row["tested_count"])
+        row["age_class_breakdown"] = breakdown
 
     @staticmethod
     def _ratio(correct: int, tested: int) -> float:

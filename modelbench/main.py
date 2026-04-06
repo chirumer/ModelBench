@@ -22,6 +22,11 @@ class BulkRunCreateRequest(BaseModel):
     adult_max: int
 
 
+class BulkRunSettingsRequest(BaseModel):
+    baby_max: int
+    adult_max: int
+
+
 def create_app(service_factory: Callable[[], object] | None = None) -> FastAPI:
     @asynccontextmanager
     async def lifespan(app: FastAPI):
@@ -115,6 +120,25 @@ def create_app(service_factory: Callable[[], object] | None = None) -> FastAPI:
     async def get_bulk_run(request: Request, run_id: str) -> dict:
         try:
             return {"run": request.app.state.service.get_bulk_run(run_id)}
+        except Exception as exc:
+            status_code = getattr(exc, "status_code", 500)
+            detail = getattr(exc, "message", "Bulk inference failed.")
+            raise HTTPException(status_code=status_code, detail=detail) from exc
+
+    @app.patch("/api/bulk-runs/{run_id}/settings")
+    async def update_bulk_run_settings(
+        request: Request,
+        run_id: str,
+        body: BulkRunSettingsRequest,
+    ) -> dict:
+        try:
+            return {
+                "run": request.app.state.service.update_bulk_run_settings(
+                    run_id,
+                    body.baby_max,
+                    body.adult_max,
+                )
+            }
         except Exception as exc:
             status_code = getattr(exc, "status_code", 500)
             detail = getattr(exc, "message", "Bulk inference failed.")

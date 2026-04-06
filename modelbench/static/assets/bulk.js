@@ -5,6 +5,8 @@ const state = {
   runId: null,
   run: null,
   pollTimer: null,
+  settingsTimer: null,
+  settingsRequestToken: 0,
 };
 
 const bulkModelList = document.getElementById("bulkModelList");
@@ -79,6 +81,10 @@ function renderAgeClassSummary() {
     <div class="age-class-pill"><span>Man/Woman</span><strong>${babyMax + 1}-${adultMax}</strong></div>
     <div class="age-class-pill"><span>Old</span><strong>${adultMax + 1}+</strong></div>
   `;
+}
+
+function hasRunSnapshot() {
+  return Boolean(state.runId && state.run);
 }
 
 function renderModelList() {
@@ -220,6 +226,16 @@ function renderResultsPanels() {
         <td>
           <div class="metric-value">${rowData ? formatPercent(rowData.age_class_accuracy, rowData.tested_count) : "--"}</div>
           <div class="metric-subtext">${rowData ? `${rowData.age_class_correct_count} correct` : "Waiting to run"}</div>
+          ${
+            rowData
+              ? Object.values(rowData.age_class_breakdown || {})
+                  .map(
+                    (entry) =>
+                      `<div class="metric-subtext">${entry.label}: ${entry.correct_count} / ${entry.total_count}</div>`,
+                  )
+                  .join("")
+              : ""
+          }
         </td>
         <td>
           <div class="metric-value">${rowData ? rowData.missed_detection_count : 0}</div>
@@ -244,11 +260,14 @@ function renderRunMessage(message, isError = false) {
 
 function setControlsDisabled(disabled) {
   startBulkRunButton.disabled = disabled;
-  babyMaxSlider.disabled = disabled;
-  adultMaxSlider.disabled = disabled;
   Array.from(bulkModelList.querySelectorAll("input[type='checkbox']")).forEach((input) => {
     input.disabled = disabled;
   });
+}
+
+function setSliderState(disabled) {
+  babyMaxSlider.disabled = disabled;
+  adultMaxSlider.disabled = disabled;
 }
 
 async function loadInitialData() {
@@ -291,18 +310,20 @@ async function pollRun() {
     state.run = payload.run;
     renderRunStatus();
     renderResultsPanels();
+    setSliderState(false);
     const active = isRunActive();
     setControlsDisabled(active);
     if (active) {
       renderRunMessage("Bulk inference is running. Metrics update as each image finishes.");
       state.pollTimer = window.setTimeout(pollRun, 1000);
     } else {
-      renderRunMessage("Bulk inference finished. Adjust models or age classes and run again.");
+      renderRunMessage("Bulk inference finished. Adjust age classes to recalculate saved results or run again.");
       stopPolling();
     }
   } catch (error) {
     renderRunMessage(error.message, true);
     setControlsDisabled(false);
+    setSliderState(false);
     stopPolling();
   }
 }
@@ -317,6 +338,7 @@ async function startBulkRun() {
   const { babyMax, adultMax } = normalizeSliderValues();
   renderAgeClassSummary();
   setControlsDisabled(true);
+  setSliderState(true);
   renderRunMessage("Starting bulk inference run...");
 
   try {
@@ -340,23 +362,82 @@ async function startBulkRun() {
     state.run = payload.run;
     renderRunStatus();
     renderResultsPanels();
+    setSliderState(false);
     if (isRunActive()) {
       state.pollTimer = window.setTimeout(pollRun, 1000);
+    } else {
+      setControlsDisabled(false);
     }
   } catch (error) {
     renderRunMessage(error.message, true);
     setControlsDisabled(false);
+    setSliderState(false);
   }
+}
+
+async function pushRunSettings() {
+  if (!hasRunSnapshot()) {
+    return;
+  }
+
+  const { babyMax, adultMax } = normalizeSliderValues();
+  const token = ++state.settingsRequestToken;
+
+  try {
+    const response = await fetch(`/api/bulk-runs/${state.runId}/settings`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        baby_max: babyMax,
+        adult_max: adultMax,
+      }),
+    });
+
+    const payload = await response.json();
+    if (!response.ok) {
+      throw new Error(payload.detail || "Unable to update age classes.");
+    }
+
+    if (token !== state.settingsRequestToken) {
+      return;
+    }
+
+    state.run = payload.run;
+    renderRunStatus();
+    renderResultsPanels();
+    if (isRunActive()) {
+      renderRunMessage("Age classes updated. Saved results are being recomputed while the run continues.");
+    } else {
+      renderRunMessage("Age classes updated. Age-class metrics were recalculated from saved predictions.");
+    }
+  } catch (error) {
+    renderRunMessage(error.message, true);
+  }
+}
+
+function scheduleSettingsUpdate() {
+  if (!hasRunSnapshot()) {
+    return;
+  }
+  if (state.settingsTimer) {
+    window.clearTimeout(state.settingsTimer);
+  }
+  state.settingsTimer = window.setTimeout(() => {
+    state.settingsTimer = null;
+    pushRunSettings();
+  }, 200);
 }
 
 babyMaxSlider.addEventListener("input", () => {
   normalizeSliderValues("baby");
   renderAgeClassSummary();
+  scheduleSettingsUpdate();
 });
 
 adultMaxSlider.addEventListener("input", () => {
   normalizeSliderValues("adult");
   renderAgeClassSummary();
+  scheduleSettingsUpdate();
 });
 
 startBulkRunButton.addEventListener("click", startBulkRun);
@@ -370,6 +451,7 @@ async function init() {
     renderRunStatus();
     renderResultsPanels();
     renderRunMessage("Choose models and age classes, then start a run.");
+    setSliderState(false);
   } catch (error) {
     renderRunMessage(error.message, true);
   }
