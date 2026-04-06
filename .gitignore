@@ -1,0 +1,14 @@
+.DS_Store
+.pytest_cache/
+.venv/
+__pycache__/
+*.pyc
+
+# Local app artifacts
+modelbench/__pycache__/
+modelbench/tests/__pycache__/
+
+# Nested submodule-local artifacts
+SSR-Net/.venv/
+SSR-Net/.pytest_cache/
+SSR-Net/__pycache__/

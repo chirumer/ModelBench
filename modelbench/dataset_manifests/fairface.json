@@ -1,0 +1,1913 @@
+{
+  "dataset": {
+    "id": "fairface",
+    "name": "FairFace",
+    "description": "Balanced face crops with age buckets, gender labels, and race labels.",
+    "hf_dataset": "HuggingFaceM4/FairFace",
+    "hf_config": "0.25",
+    "hf_split": "train",
+    "image_count": 100
+  },
+  "images": [
+    {
+      "id": "fairface-001",
+      "dataset_id": "fairface",
+      "image_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/images/fairface-001.jpg",
+      "thumbnail_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/thumbs/fairface-001.jpg",
+      "image_url": "/static/datasets/fairface/images/fairface-001.jpg",
+      "thumbnail_url": "/static/datasets/fairface/thumbs/fairface-001.jpg",
+      "label_summary": "50-59 \u2022 Male \u2022 East Asian",
+      "ground_truth": {
+        "dataset_type": "fairface",
+        "age_kind": "bucket",
+        "age_display": "50-59",
+        "age_value": "50-59",
+        "gender_display": "Male",
+        "gender_value": "male",
+        "demographic_label": "East Asian",
+        "comparison_age_display": "50-59"
+      }
+    },
+    {
+      "id": "fairface-002",
+      "dataset_id": "fairface",
+      "image_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/images/fairface-002.jpg",
+      "thumbnail_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/thumbs/fairface-002.jpg",
+      "image_url": "/static/datasets/fairface/images/fairface-002.jpg",
+      "thumbnail_url": "/static/datasets/fairface/thumbs/fairface-002.jpg",
+      "label_summary": "30-39 \u2022 Female \u2022 Indian",
+      "ground_truth": {
+        "dataset_type": "fairface",
+        "age_kind": "bucket",
+        "age_display": "30-39",
+        "age_value": "30-39",
+        "gender_display": "Female",
+        "gender_value": "female",
+        "demographic_label": "Indian",
+        "comparison_age_display": "30-39"
+      }
+    },
+    {
+      "id": "fairface-003",
+      "dataset_id": "fairface",
+      "image_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/images/fairface-003.jpg",
+      "thumbnail_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/thumbs/fairface-003.jpg",
+      "image_url": "/static/datasets/fairface/images/fairface-003.jpg",
+      "thumbnail_url": "/static/datasets/fairface/thumbs/fairface-003.jpg",
+      "label_summary": "3-9 \u2022 Female \u2022 Black",
+      "ground_truth": {
+        "dataset_type": "fairface",
+        "age_kind": "bucket",
+        "age_display": "3-9",
+        "age_value": "3-9",
+        "gender_display": "Female",
+        "gender_value": "female",
+        "demographic_label": "Black",
+        "comparison_age_display": "3-9"
+      }
+    },
+    {
+      "id": "fairface-004",
+      "dataset_id": "fairface",
+      "image_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/images/fairface-004.jpg",
+      "thumbnail_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/thumbs/fairface-004.jpg",
+      "image_url": "/static/datasets/fairface/images/fairface-004.jpg",
+      "thumbnail_url": "/static/datasets/fairface/thumbs/fairface-004.jpg",
+      "label_summary": "20-29 \u2022 Female \u2022 Indian",
+      "ground_truth": {
+        "dataset_type": "fairface",
+        "age_kind": "bucket",
+        "age_display": "20-29",
+        "age_value": "20-29",
+        "gender_display": "Female",
+        "gender_value": "female",
+        "demographic_label": "Indian",
+        "comparison_age_display": "20-29"
+      }
+    },
+    {
+      "id": "fairface-005",
+      "dataset_id": "fairface",
+      "image_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/images/fairface-005.jpg",
+      "thumbnail_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/thumbs/fairface-005.jpg",
+      "image_url": "/static/datasets/fairface/images/fairface-005.jpg",
+      "thumbnail_url": "/static/datasets/fairface/thumbs/fairface-005.jpg",
+      "label_summary": "20-29 \u2022 Female \u2022 Indian",
+      "ground_truth": {
+        "dataset_type": "fairface",
+        "age_kind": "bucket",
+        "age_display": "20-29",
+        "age_value": "20-29",
+        "gender_display": "Female",
+        "gender_value": "female",
+        "demographic_label": "Indian",
+        "comparison_age_display": "20-29"
+      }
+    },
+    {
+      "id": "fairface-006",
+      "dataset_id": "fairface",
+      "image_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/images/fairface-006.jpg",
+      "thumbnail_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/thumbs/fairface-006.jpg",
+      "image_url": "/static/datasets/fairface/images/fairface-006.jpg",
+      "thumbnail_url": "/static/datasets/fairface/thumbs/fairface-006.jpg",
+      "label_summary": "20-29 \u2022 Male \u2022 White",
+      "ground_truth": {
+        "dataset_type": "fairface",
+        "age_kind": "bucket",
+        "age_display": "20-29",
+        "age_value": "20-29",
+        "gender_display": "Male",
+        "gender_value": "male",
+        "demographic_label": "White",
+        "comparison_age_display": "20-29"
+      }
+    },
+    {
+      "id": "fairface-007",
+      "dataset_id": "fairface",
+      "image_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/images/fairface-007.jpg",
+      "thumbnail_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/thumbs/fairface-007.jpg",
+      "image_url": "/static/datasets/fairface/images/fairface-007.jpg",
+      "thumbnail_url": "/static/datasets/fairface/thumbs/fairface-007.jpg",
+      "label_summary": "40-49 \u2022 Male \u2022 Middle Eastern",
+      "ground_truth": {
+        "dataset_type": "fairface",
+        "age_kind": "bucket",
+        "age_display": "40-49",
+        "age_value": "40-49",
+        "gender_display": "Male",
+        "gender_value": "male",
+        "demographic_label": "Middle Eastern",
+        "comparison_age_display": "40-49"
+      }
+    },
+    {
+      "id": "fairface-008",
+      "dataset_id": "fairface",
+      "image_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/images/fairface-008.jpg",
+      "thumbnail_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/thumbs/fairface-008.jpg",
+      "image_url": "/static/datasets/fairface/images/fairface-008.jpg",
+      "thumbnail_url": "/static/datasets/fairface/thumbs/fairface-008.jpg",
+      "label_summary": "30-39 \u2022 Female \u2022 Indian",
+      "ground_truth": {
+        "dataset_type": "fairface",
+        "age_kind": "bucket",
+        "age_display": "30-39",
+        "age_value": "30-39",
+        "gender_display": "Female",
+        "gender_value": "female",
+        "demographic_label": "Indian",
+        "comparison_age_display": "30-39"
+      }
+    },
+    {
+      "id": "fairface-009",
+      "dataset_id": "fairface",
+      "image_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/images/fairface-009.jpg",
+      "thumbnail_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/thumbs/fairface-009.jpg",
+      "image_url": "/static/datasets/fairface/images/fairface-009.jpg",
+      "thumbnail_url": "/static/datasets/fairface/thumbs/fairface-009.jpg",
+      "label_summary": "10-19 \u2022 Male \u2022 White",
+      "ground_truth": {
+        "dataset_type": "fairface",
+        "age_kind": "bucket",
+        "age_display": "10-19",
+        "age_value": "10-19",
+        "gender_display": "Male",
+        "gender_value": "male",
+        "demographic_label": "White",
+        "comparison_age_display": "10-19"
+      }
+    },
+    {
+      "id": "fairface-010",
+      "dataset_id": "fairface",
+      "image_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/images/fairface-010.jpg",
+      "thumbnail_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/thumbs/fairface-010.jpg",
+      "image_url": "/static/datasets/fairface/images/fairface-010.jpg",
+      "thumbnail_url": "/static/datasets/fairface/thumbs/fairface-010.jpg",
+      "label_summary": "30-39 \u2022 Male \u2022 Middle Eastern",
+      "ground_truth": {
+        "dataset_type": "fairface",
+        "age_kind": "bucket",
+        "age_display": "30-39",
+        "age_value": "30-39",
+        "gender_display": "Male",
+        "gender_value": "male",
+        "demographic_label": "Middle Eastern",
+        "comparison_age_display": "30-39"
+      }
+    },
+    {
+      "id": "fairface-011",
+      "dataset_id": "fairface",
+      "image_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/images/fairface-011.jpg",
+      "thumbnail_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/thumbs/fairface-011.jpg",
+      "image_url": "/static/datasets/fairface/images/fairface-011.jpg",
+      "thumbnail_url": "/static/datasets/fairface/thumbs/fairface-011.jpg",
+      "label_summary": "50-59 \u2022 Male \u2022 East Asian",
+      "ground_truth": {
+        "dataset_type": "fairface",
+        "age_kind": "bucket",
+        "age_display": "50-59",
+        "age_value": "50-59",
+        "gender_display": "Male",
+        "gender_value": "male",
+        "demographic_label": "East Asian",
+        "comparison_age_display": "50-59"
+      }
+    },
+    {
+      "id": "fairface-012",
+      "dataset_id": "fairface",
+      "image_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/images/fairface-012.jpg",
+      "thumbnail_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/thumbs/fairface-012.jpg",
+      "image_url": "/static/datasets/fairface/images/fairface-012.jpg",
+      "thumbnail_url": "/static/datasets/fairface/thumbs/fairface-012.jpg",
+      "label_summary": "20-29 \u2022 Male \u2022 East Asian",
+      "ground_truth": {
+        "dataset_type": "fairface",
+        "age_kind": "bucket",
+        "age_display": "20-29",
+        "age_value": "20-29",
+        "gender_display": "Male",
+        "gender_value": "male",
+        "demographic_label": "East Asian",
+        "comparison_age_display": "20-29"
+      }
+    },
+    {
+      "id": "fairface-013",
+      "dataset_id": "fairface",
+      "image_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/images/fairface-013.jpg",
+      "thumbnail_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/thumbs/fairface-013.jpg",
+      "image_url": "/static/datasets/fairface/images/fairface-013.jpg",
+      "thumbnail_url": "/static/datasets/fairface/thumbs/fairface-013.jpg",
+      "label_summary": "20-29 \u2022 Male \u2022 Latino_Hispanic",
+      "ground_truth": {
+        "dataset_type": "fairface",
+        "age_kind": "bucket",
+        "age_display": "20-29",
+        "age_value": "20-29",
+        "gender_display": "Male",
+        "gender_value": "male",
+        "demographic_label": "Latino_Hispanic",
+        "comparison_age_display": "20-29"
+      }
+    },
+    {
+      "id": "fairface-014",
+      "dataset_id": "fairface",
+      "image_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/images/fairface-014.jpg",
+      "thumbnail_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/thumbs/fairface-014.jpg",
+      "image_url": "/static/datasets/fairface/images/fairface-014.jpg",
+      "thumbnail_url": "/static/datasets/fairface/thumbs/fairface-014.jpg",
+      "label_summary": "10-19 \u2022 Male \u2022 Indian",
+      "ground_truth": {
+        "dataset_type": "fairface",
+        "age_kind": "bucket",
+        "age_display": "10-19",
+        "age_value": "10-19",
+        "gender_display": "Male",
+        "gender_value": "male",
+        "demographic_label": "Indian",
+        "comparison_age_display": "10-19"
+      }
+    },
+    {
+      "id": "fairface-015",
+      "dataset_id": "fairface",
+      "image_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/images/fairface-015.jpg",
+      "thumbnail_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/thumbs/fairface-015.jpg",
+      "image_url": "/static/datasets/fairface/images/fairface-015.jpg",
+      "thumbnail_url": "/static/datasets/fairface/thumbs/fairface-015.jpg",
+      "label_summary": "60-69 \u2022 Female \u2022 Indian",
+      "ground_truth": {
+        "dataset_type": "fairface",
+        "age_kind": "bucket",
+        "age_display": "60-69",
+        "age_value": "60-69",
+        "gender_display": "Female",
+        "gender_value": "female",
+        "demographic_label": "Indian",
+        "comparison_age_display": "60-69"
+      }
+    },
+    {
+      "id": "fairface-016",
+      "dataset_id": "fairface",
+      "image_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/images/fairface-016.jpg",
+      "thumbnail_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/thumbs/fairface-016.jpg",
+      "image_url": "/static/datasets/fairface/images/fairface-016.jpg",
+      "thumbnail_url": "/static/datasets/fairface/thumbs/fairface-016.jpg",
+      "label_summary": "30-39 \u2022 Female \u2022 White",
+      "ground_truth": {
+        "dataset_type": "fairface",
+        "age_kind": "bucket",
+        "age_display": "30-39",
+        "age_value": "30-39",
+        "gender_display": "Female",
+        "gender_value": "female",
+        "demographic_label": "White",
+        "comparison_age_display": "30-39"
+      }
+    },
+    {
+      "id": "fairface-017",
+      "dataset_id": "fairface",
+      "image_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/images/fairface-017.jpg",
+      "thumbnail_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/thumbs/fairface-017.jpg",
+      "image_url": "/static/datasets/fairface/images/fairface-017.jpg",
+      "thumbnail_url": "/static/datasets/fairface/thumbs/fairface-017.jpg",
+      "label_summary": "20-29 \u2022 Female \u2022 Southeast Asian",
+      "ground_truth": {
+        "dataset_type": "fairface",
+        "age_kind": "bucket",
+        "age_display": "20-29",
+        "age_value": "20-29",
+        "gender_display": "Female",
+        "gender_value": "female",
+        "demographic_label": "Southeast Asian",
+        "comparison_age_display": "20-29"
+      }
+    },
+    {
+      "id": "fairface-018",
+      "dataset_id": "fairface",
+      "image_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/images/fairface-018.jpg",
+      "thumbnail_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/thumbs/fairface-018.jpg",
+      "image_url": "/static/datasets/fairface/images/fairface-018.jpg",
+      "thumbnail_url": "/static/datasets/fairface/thumbs/fairface-018.jpg",
+      "label_summary": "40-49 \u2022 Male \u2022 Southeast Asian",
+      "ground_truth": {
+        "dataset_type": "fairface",
+        "age_kind": "bucket",
+        "age_display": "40-49",
+        "age_value": "40-49",
+        "gender_display": "Male",
+        "gender_value": "male",
+        "demographic_label": "Southeast Asian",
+        "comparison_age_display": "40-49"
+      }
+    },
+    {
+      "id": "fairface-019",
+      "dataset_id": "fairface",
+      "image_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/images/fairface-019.jpg",
+      "thumbnail_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/thumbs/fairface-019.jpg",
+      "image_url": "/static/datasets/fairface/images/fairface-019.jpg",
+      "thumbnail_url": "/static/datasets/fairface/thumbs/fairface-019.jpg",
+      "label_summary": "0-2 \u2022 Female \u2022 Black",
+      "ground_truth": {
+        "dataset_type": "fairface",
+        "age_kind": "bucket",
+        "age_display": "0-2",
+        "age_value": "0-2",
+        "gender_display": "Female",
+        "gender_value": "female",
+        "demographic_label": "Black",
+        "comparison_age_display": "0-2"
+      }
+    },
+    {
+      "id": "fairface-020",
+      "dataset_id": "fairface",
+      "image_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/images/fairface-020.jpg",
+      "thumbnail_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/thumbs/fairface-020.jpg",
+      "image_url": "/static/datasets/fairface/images/fairface-020.jpg",
+      "thumbnail_url": "/static/datasets/fairface/thumbs/fairface-020.jpg",
+      "label_summary": "50-59 \u2022 Male \u2022 Southeast Asian",
+      "ground_truth": {
+        "dataset_type": "fairface",
+        "age_kind": "bucket",
+        "age_display": "50-59",
+        "age_value": "50-59",
+        "gender_display": "Male",
+        "gender_value": "male",
+        "demographic_label": "Southeast Asian",
+        "comparison_age_display": "50-59"
+      }
+    },
+    {
+      "id": "fairface-021",
+      "dataset_id": "fairface",
+      "image_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/images/fairface-021.jpg",
+      "thumbnail_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/thumbs/fairface-021.jpg",
+      "image_url": "/static/datasets/fairface/images/fairface-021.jpg",
+      "thumbnail_url": "/static/datasets/fairface/thumbs/fairface-021.jpg",
+      "label_summary": "20-29 \u2022 Female \u2022 Indian",
+      "ground_truth": {
+        "dataset_type": "fairface",
+        "age_kind": "bucket",
+        "age_display": "20-29",
+        "age_value": "20-29",
+        "gender_display": "Female",
+        "gender_value": "female",
+        "demographic_label": "Indian",
+        "comparison_age_display": "20-29"
+      }
+    },
+    {
+      "id": "fairface-022",
+      "dataset_id": "fairface",
+      "image_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/images/fairface-022.jpg",
+      "thumbnail_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/thumbs/fairface-022.jpg",
+      "image_url": "/static/datasets/fairface/images/fairface-022.jpg",
+      "thumbnail_url": "/static/datasets/fairface/thumbs/fairface-022.jpg",
+      "label_summary": "30-39 \u2022 Female \u2022 Middle Eastern",
+      "ground_truth": {
+        "dataset_type": "fairface",
+        "age_kind": "bucket",
+        "age_display": "30-39",
+        "age_value": "30-39",
+        "gender_display": "Female",
+        "gender_value": "female",
+        "demographic_label": "Middle Eastern",
+        "comparison_age_display": "30-39"
+      }
+    },
+    {
+      "id": "fairface-023",
+      "dataset_id": "fairface",
+      "image_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/images/fairface-023.jpg",
+      "thumbnail_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/thumbs/fairface-023.jpg",
+      "image_url": "/static/datasets/fairface/images/fairface-023.jpg",
+      "thumbnail_url": "/static/datasets/fairface/thumbs/fairface-023.jpg",
+      "label_summary": "20-29 \u2022 Female \u2022 Black",
+      "ground_truth": {
+        "dataset_type": "fairface",
+        "age_kind": "bucket",
+        "age_display": "20-29",
+        "age_value": "20-29",
+        "gender_display": "Female",
+        "gender_value": "female",
+        "demographic_label": "Black",
+        "comparison_age_display": "20-29"
+      }
+    },
+    {
+      "id": "fairface-024",
+      "dataset_id": "fairface",
+      "image_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/images/fairface-024.jpg",
+      "thumbnail_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/thumbs/fairface-024.jpg",
+      "image_url": "/static/datasets/fairface/images/fairface-024.jpg",
+      "thumbnail_url": "/static/datasets/fairface/thumbs/fairface-024.jpg",
+      "label_summary": "30-39 \u2022 Female \u2022 White",
+      "ground_truth": {
+        "dataset_type": "fairface",
+        "age_kind": "bucket",
+        "age_display": "30-39",
+        "age_value": "30-39",
+        "gender_display": "Female",
+        "gender_value": "female",
+        "demographic_label": "White",
+        "comparison_age_display": "30-39"
+      }
+    },
+    {
+      "id": "fairface-025",
+      "dataset_id": "fairface",
+      "image_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/images/fairface-025.jpg",
+      "thumbnail_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/thumbs/fairface-025.jpg",
+      "image_url": "/static/datasets/fairface/images/fairface-025.jpg",
+      "thumbnail_url": "/static/datasets/fairface/thumbs/fairface-025.jpg",
+      "label_summary": "20-29 \u2022 Female \u2022 White",
+      "ground_truth": {
+        "dataset_type": "fairface",
+        "age_kind": "bucket",
+        "age_display": "20-29",
+        "age_value": "20-29",
+        "gender_display": "Female",
+        "gender_value": "female",
+        "demographic_label": "White",
+        "comparison_age_display": "20-29"
+      }
+    },
+    {
+      "id": "fairface-026",
+      "dataset_id": "fairface",
+      "image_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/images/fairface-026.jpg",
+      "thumbnail_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/thumbs/fairface-026.jpg",
+      "image_url": "/static/datasets/fairface/images/fairface-026.jpg",
+      "thumbnail_url": "/static/datasets/fairface/thumbs/fairface-026.jpg",
+      "label_summary": "30-39 \u2022 Female \u2022 Black",
+      "ground_truth": {
+        "dataset_type": "fairface",
+        "age_kind": "bucket",
+        "age_display": "30-39",
+        "age_value": "30-39",
+        "gender_display": "Female",
+        "gender_value": "female",
+        "demographic_label": "Black",
+        "comparison_age_display": "30-39"
+      }
+    },
+    {
+      "id": "fairface-027",
+      "dataset_id": "fairface",
+      "image_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/images/fairface-027.jpg",
+      "thumbnail_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/thumbs/fairface-027.jpg",
+      "image_url": "/static/datasets/fairface/images/fairface-027.jpg",
+      "thumbnail_url": "/static/datasets/fairface/thumbs/fairface-027.jpg",
+      "label_summary": "50-59 \u2022 Female \u2022 White",
+      "ground_truth": {
+        "dataset_type": "fairface",
+        "age_kind": "bucket",
+        "age_display": "50-59",
+        "age_value": "50-59",
+        "gender_display": "Female",
+        "gender_value": "female",
+        "demographic_label": "White",
+        "comparison_age_display": "50-59"
+      }
+    },
+    {
+      "id": "fairface-028",
+      "dataset_id": "fairface",
+      "image_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/images/fairface-028.jpg",
+      "thumbnail_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/thumbs/fairface-028.jpg",
+      "image_url": "/static/datasets/fairface/images/fairface-028.jpg",
+      "thumbnail_url": "/static/datasets/fairface/thumbs/fairface-028.jpg",
+      "label_summary": "10-19 \u2022 Female \u2022 White",
+      "ground_truth": {
+        "dataset_type": "fairface",
+        "age_kind": "bucket",
+        "age_display": "10-19",
+        "age_value": "10-19",
+        "gender_display": "Female",
+        "gender_value": "female",
+        "demographic_label": "White",
+        "comparison_age_display": "10-19"
+      }
+    },
+    {
+      "id": "fairface-029",
+      "dataset_id": "fairface",
+      "image_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/images/fairface-029.jpg",
+      "thumbnail_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/thumbs/fairface-029.jpg",
+      "image_url": "/static/datasets/fairface/images/fairface-029.jpg",
+      "thumbnail_url": "/static/datasets/fairface/thumbs/fairface-029.jpg",
+      "label_summary": "20-29 \u2022 Male \u2022 Indian",
+      "ground_truth": {
+        "dataset_type": "fairface",
+        "age_kind": "bucket",
+        "age_display": "20-29",
+        "age_value": "20-29",
+        "gender_display": "Male",
+        "gender_value": "male",
+        "demographic_label": "Indian",
+        "comparison_age_display": "20-29"
+      }
+    },
+    {
+      "id": "fairface-030",
+      "dataset_id": "fairface",
+      "image_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/images/fairface-030.jpg",
+      "thumbnail_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/thumbs/fairface-030.jpg",
+      "image_url": "/static/datasets/fairface/images/fairface-030.jpg",
+      "thumbnail_url": "/static/datasets/fairface/thumbs/fairface-030.jpg",
+      "label_summary": "20-29 \u2022 Female \u2022 Black",
+      "ground_truth": {
+        "dataset_type": "fairface",
+        "age_kind": "bucket",
+        "age_display": "20-29",
+        "age_value": "20-29",
+        "gender_display": "Female",
+        "gender_value": "female",
+        "demographic_label": "Black",
+        "comparison_age_display": "20-29"
+      }
+    },
+    {
+      "id": "fairface-031",
+      "dataset_id": "fairface",
+      "image_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/images/fairface-031.jpg",
+      "thumbnail_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/thumbs/fairface-031.jpg",
+      "image_url": "/static/datasets/fairface/images/fairface-031.jpg",
+      "thumbnail_url": "/static/datasets/fairface/thumbs/fairface-031.jpg",
+      "label_summary": "40-49 \u2022 Female \u2022 Black",
+      "ground_truth": {
+        "dataset_type": "fairface",
+        "age_kind": "bucket",
+        "age_display": "40-49",
+        "age_value": "40-49",
+        "gender_display": "Female",
+        "gender_value": "female",
+        "demographic_label": "Black",
+        "comparison_age_display": "40-49"
+      }
+    },
+    {
+      "id": "fairface-032",
+      "dataset_id": "fairface",
+      "image_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/images/fairface-032.jpg",
+      "thumbnail_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/thumbs/fairface-032.jpg",
+      "image_url": "/static/datasets/fairface/images/fairface-032.jpg",
+      "thumbnail_url": "/static/datasets/fairface/thumbs/fairface-032.jpg",
+      "label_summary": "10-19 \u2022 Female \u2022 East Asian",
+      "ground_truth": {
+        "dataset_type": "fairface",
+        "age_kind": "bucket",
+        "age_display": "10-19",
+        "age_value": "10-19",
+        "gender_display": "Female",
+        "gender_value": "female",
+        "demographic_label": "East Asian",
+        "comparison_age_display": "10-19"
+      }
+    },
+    {
+      "id": "fairface-033",
+      "dataset_id": "fairface",
+      "image_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/images/fairface-033.jpg",
+      "thumbnail_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/thumbs/fairface-033.jpg",
+      "image_url": "/static/datasets/fairface/images/fairface-033.jpg",
+      "thumbnail_url": "/static/datasets/fairface/thumbs/fairface-033.jpg",
+      "label_summary": "50-59 \u2022 Male \u2022 White",
+      "ground_truth": {
+        "dataset_type": "fairface",
+        "age_kind": "bucket",
+        "age_display": "50-59",
+        "age_value": "50-59",
+        "gender_display": "Male",
+        "gender_value": "male",
+        "demographic_label": "White",
+        "comparison_age_display": "50-59"
+      }
+    },
+    {
+      "id": "fairface-034",
+      "dataset_id": "fairface",
+      "image_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/images/fairface-034.jpg",
+      "thumbnail_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/thumbs/fairface-034.jpg",
+      "image_url": "/static/datasets/fairface/images/fairface-034.jpg",
+      "thumbnail_url": "/static/datasets/fairface/thumbs/fairface-034.jpg",
+      "label_summary": "40-49 \u2022 Male \u2022 Middle Eastern",
+      "ground_truth": {
+        "dataset_type": "fairface",
+        "age_kind": "bucket",
+        "age_display": "40-49",
+        "age_value": "40-49",
+        "gender_display": "Male",
+        "gender_value": "male",
+        "demographic_label": "Middle Eastern",
+        "comparison_age_display": "40-49"
+      }
+    },
+    {
+      "id": "fairface-035",
+      "dataset_id": "fairface",
+      "image_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/images/fairface-035.jpg",
+      "thumbnail_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/thumbs/fairface-035.jpg",
+      "image_url": "/static/datasets/fairface/images/fairface-035.jpg",
+      "thumbnail_url": "/static/datasets/fairface/thumbs/fairface-035.jpg",
+      "label_summary": "20-29 \u2022 Male \u2022 East Asian",
+      "ground_truth": {
+        "dataset_type": "fairface",
+        "age_kind": "bucket",
+        "age_display": "20-29",
+        "age_value": "20-29",
+        "gender_display": "Male",
+        "gender_value": "male",
+        "demographic_label": "East Asian",
+        "comparison_age_display": "20-29"
+      }
+    },
+    {
+      "id": "fairface-036",
+      "dataset_id": "fairface",
+      "image_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/images/fairface-036.jpg",
+      "thumbnail_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/thumbs/fairface-036.jpg",
+      "image_url": "/static/datasets/fairface/images/fairface-036.jpg",
+      "thumbnail_url": "/static/datasets/fairface/thumbs/fairface-036.jpg",
+      "label_summary": "60-69 \u2022 Female \u2022 Middle Eastern",
+      "ground_truth": {
+        "dataset_type": "fairface",
+        "age_kind": "bucket",
+        "age_display": "60-69",
+        "age_value": "60-69",
+        "gender_display": "Female",
+        "gender_value": "female",
+        "demographic_label": "Middle Eastern",
+        "comparison_age_display": "60-69"
+      }
+    },
+    {
+      "id": "fairface-037",
+      "dataset_id": "fairface",
+      "image_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/images/fairface-037.jpg",
+      "thumbnail_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/thumbs/fairface-037.jpg",
+      "image_url": "/static/datasets/fairface/images/fairface-037.jpg",
+      "thumbnail_url": "/static/datasets/fairface/thumbs/fairface-037.jpg",
+      "label_summary": "20-29 \u2022 Female \u2022 Latino_Hispanic",
+      "ground_truth": {
+        "dataset_type": "fairface",
+        "age_kind": "bucket",
+        "age_display": "20-29",
+        "age_value": "20-29",
+        "gender_display": "Female",
+        "gender_value": "female",
+        "demographic_label": "Latino_Hispanic",
+        "comparison_age_display": "20-29"
+      }
+    },
+    {
+      "id": "fairface-038",
+      "dataset_id": "fairface",
+      "image_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/images/fairface-038.jpg",
+      "thumbnail_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/thumbs/fairface-038.jpg",
+      "image_url": "/static/datasets/fairface/images/fairface-038.jpg",
+      "thumbnail_url": "/static/datasets/fairface/thumbs/fairface-038.jpg",
+      "label_summary": "30-39 \u2022 Male \u2022 Latino_Hispanic",
+      "ground_truth": {
+        "dataset_type": "fairface",
+        "age_kind": "bucket",
+        "age_display": "30-39",
+        "age_value": "30-39",
+        "gender_display": "Male",
+        "gender_value": "male",
+        "demographic_label": "Latino_Hispanic",
+        "comparison_age_display": "30-39"
+      }
+    },
+    {
+      "id": "fairface-039",
+      "dataset_id": "fairface",
+      "image_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/images/fairface-039.jpg",
+      "thumbnail_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/thumbs/fairface-039.jpg",
+      "image_url": "/static/datasets/fairface/images/fairface-039.jpg",
+      "thumbnail_url": "/static/datasets/fairface/thumbs/fairface-039.jpg",
+      "label_summary": "50-59 \u2022 Male \u2022 Middle Eastern",
+      "ground_truth": {
+        "dataset_type": "fairface",
+        "age_kind": "bucket",
+        "age_display": "50-59",
+        "age_value": "50-59",
+        "gender_display": "Male",
+        "gender_value": "male",
+        "demographic_label": "Middle Eastern",
+        "comparison_age_display": "50-59"
+      }
+    },
+    {
+      "id": "fairface-040",
+      "dataset_id": "fairface",
+      "image_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/images/fairface-040.jpg",
+      "thumbnail_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/thumbs/fairface-040.jpg",
+      "image_url": "/static/datasets/fairface/images/fairface-040.jpg",
+      "thumbnail_url": "/static/datasets/fairface/thumbs/fairface-040.jpg",
+      "label_summary": "20-29 \u2022 Female \u2022 Latino_Hispanic",
+      "ground_truth": {
+        "dataset_type": "fairface",
+        "age_kind": "bucket",
+        "age_display": "20-29",
+        "age_value": "20-29",
+        "gender_display": "Female",
+        "gender_value": "female",
+        "demographic_label": "Latino_Hispanic",
+        "comparison_age_display": "20-29"
+      }
+    },
+    {
+      "id": "fairface-041",
+      "dataset_id": "fairface",
+      "image_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/images/fairface-041.jpg",
+      "thumbnail_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/thumbs/fairface-041.jpg",
+      "image_url": "/static/datasets/fairface/images/fairface-041.jpg",
+      "thumbnail_url": "/static/datasets/fairface/thumbs/fairface-041.jpg",
+      "label_summary": "20-29 \u2022 Male \u2022 White",
+      "ground_truth": {
+        "dataset_type": "fairface",
+        "age_kind": "bucket",
+        "age_display": "20-29",
+        "age_value": "20-29",
+        "gender_display": "Male",
+        "gender_value": "male",
+        "demographic_label": "White",
+        "comparison_age_display": "20-29"
+      }
+    },
+    {
+      "id": "fairface-042",
+      "dataset_id": "fairface",
+      "image_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/images/fairface-042.jpg",
+      "thumbnail_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/thumbs/fairface-042.jpg",
+      "image_url": "/static/datasets/fairface/images/fairface-042.jpg",
+      "thumbnail_url": "/static/datasets/fairface/thumbs/fairface-042.jpg",
+      "label_summary": "10-19 \u2022 Female \u2022 Black",
+      "ground_truth": {
+        "dataset_type": "fairface",
+        "age_kind": "bucket",
+        "age_display": "10-19",
+        "age_value": "10-19",
+        "gender_display": "Female",
+        "gender_value": "female",
+        "demographic_label": "Black",
+        "comparison_age_display": "10-19"
+      }
+    },
+    {
+      "id": "fairface-043",
+      "dataset_id": "fairface",
+      "image_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/images/fairface-043.jpg",
+      "thumbnail_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/thumbs/fairface-043.jpg",
+      "image_url": "/static/datasets/fairface/images/fairface-043.jpg",
+      "thumbnail_url": "/static/datasets/fairface/thumbs/fairface-043.jpg",
+      "label_summary": "10-19 \u2022 Female \u2022 Southeast Asian",
+      "ground_truth": {
+        "dataset_type": "fairface",
+        "age_kind": "bucket",
+        "age_display": "10-19",
+        "age_value": "10-19",
+        "gender_display": "Female",
+        "gender_value": "female",
+        "demographic_label": "Southeast Asian",
+        "comparison_age_display": "10-19"
+      }
+    },
+    {
+      "id": "fairface-044",
+      "dataset_id": "fairface",
+      "image_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/images/fairface-044.jpg",
+      "thumbnail_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/thumbs/fairface-044.jpg",
+      "image_url": "/static/datasets/fairface/images/fairface-044.jpg",
+      "thumbnail_url": "/static/datasets/fairface/thumbs/fairface-044.jpg",
+      "label_summary": "40-49 \u2022 Male \u2022 Latino_Hispanic",
+      "ground_truth": {
+        "dataset_type": "fairface",
+        "age_kind": "bucket",
+        "age_display": "40-49",
+        "age_value": "40-49",
+        "gender_display": "Male",
+        "gender_value": "male",
+        "demographic_label": "Latino_Hispanic",
+        "comparison_age_display": "40-49"
+      }
+    },
+    {
+      "id": "fairface-045",
+      "dataset_id": "fairface",
+      "image_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/images/fairface-045.jpg",
+      "thumbnail_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/thumbs/fairface-045.jpg",
+      "image_url": "/static/datasets/fairface/images/fairface-045.jpg",
+      "thumbnail_url": "/static/datasets/fairface/thumbs/fairface-045.jpg",
+      "label_summary": "10-19 \u2022 Male \u2022 Indian",
+      "ground_truth": {
+        "dataset_type": "fairface",
+        "age_kind": "bucket",
+        "age_display": "10-19",
+        "age_value": "10-19",
+        "gender_display": "Male",
+        "gender_value": "male",
+        "demographic_label": "Indian",
+        "comparison_age_display": "10-19"
+      }
+    },
+    {
+      "id": "fairface-046",
+      "dataset_id": "fairface",
+      "image_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/images/fairface-046.jpg",
+      "thumbnail_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/thumbs/fairface-046.jpg",
+      "image_url": "/static/datasets/fairface/images/fairface-046.jpg",
+      "thumbnail_url": "/static/datasets/fairface/thumbs/fairface-046.jpg",
+      "label_summary": "10-19 \u2022 Female \u2022 Indian",
+      "ground_truth": {
+        "dataset_type": "fairface",
+        "age_kind": "bucket",
+        "age_display": "10-19",
+        "age_value": "10-19",
+        "gender_display": "Female",
+        "gender_value": "female",
+        "demographic_label": "Indian",
+        "comparison_age_display": "10-19"
+      }
+    },
+    {
+      "id": "fairface-047",
+      "dataset_id": "fairface",
+      "image_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/images/fairface-047.jpg",
+      "thumbnail_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/thumbs/fairface-047.jpg",
+      "image_url": "/static/datasets/fairface/images/fairface-047.jpg",
+      "thumbnail_url": "/static/datasets/fairface/thumbs/fairface-047.jpg",
+      "label_summary": "60-69 \u2022 Male \u2022 East Asian",
+      "ground_truth": {
+        "dataset_type": "fairface",
+        "age_kind": "bucket",
+        "age_display": "60-69",
+        "age_value": "60-69",
+        "gender_display": "Male",
+        "gender_value": "male",
+        "demographic_label": "East Asian",
+        "comparison_age_display": "60-69"
+      }
+    },
+    {
+      "id": "fairface-048",
+      "dataset_id": "fairface",
+      "image_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/images/fairface-048.jpg",
+      "thumbnail_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/thumbs/fairface-048.jpg",
+      "image_url": "/static/datasets/fairface/images/fairface-048.jpg",
+      "thumbnail_url": "/static/datasets/fairface/thumbs/fairface-048.jpg",
+      "label_summary": "3-9 \u2022 Female \u2022 Middle Eastern",
+      "ground_truth": {
+        "dataset_type": "fairface",
+        "age_kind": "bucket",
+        "age_display": "3-9",
+        "age_value": "3-9",
+        "gender_display": "Female",
+        "gender_value": "female",
+        "demographic_label": "Middle Eastern",
+        "comparison_age_display": "3-9"
+      }
+    },
+    {
+      "id": "fairface-049",
+      "dataset_id": "fairface",
+      "image_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/images/fairface-049.jpg",
+      "thumbnail_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/thumbs/fairface-049.jpg",
+      "image_url": "/static/datasets/fairface/images/fairface-049.jpg",
+      "thumbnail_url": "/static/datasets/fairface/thumbs/fairface-049.jpg",
+      "label_summary": "10-19 \u2022 Female \u2022 Southeast Asian",
+      "ground_truth": {
+        "dataset_type": "fairface",
+        "age_kind": "bucket",
+        "age_display": "10-19",
+        "age_value": "10-19",
+        "gender_display": "Female",
+        "gender_value": "female",
+        "demographic_label": "Southeast Asian",
+        "comparison_age_display": "10-19"
+      }
+    },
+    {
+      "id": "fairface-050",
+      "dataset_id": "fairface",
+      "image_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/images/fairface-050.jpg",
+      "thumbnail_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/thumbs/fairface-050.jpg",
+      "image_url": "/static/datasets/fairface/images/fairface-050.jpg",
+      "thumbnail_url": "/static/datasets/fairface/thumbs/fairface-050.jpg",
+      "label_summary": "50-59 \u2022 Female \u2022 Black",
+      "ground_truth": {
+        "dataset_type": "fairface",
+        "age_kind": "bucket",
+        "age_display": "50-59",
+        "age_value": "50-59",
+        "gender_display": "Female",
+        "gender_value": "female",
+        "demographic_label": "Black",
+        "comparison_age_display": "50-59"
+      }
+    },
+    {
+      "id": "fairface-051",
+      "dataset_id": "fairface",
+      "image_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/images/fairface-051.jpg",
+      "thumbnail_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/thumbs/fairface-051.jpg",
+      "image_url": "/static/datasets/fairface/images/fairface-051.jpg",
+      "thumbnail_url": "/static/datasets/fairface/thumbs/fairface-051.jpg",
+      "label_summary": "3-9 \u2022 Female \u2022 East Asian",
+      "ground_truth": {
+        "dataset_type": "fairface",
+        "age_kind": "bucket",
+        "age_display": "3-9",
+        "age_value": "3-9",
+        "gender_display": "Female",
+        "gender_value": "female",
+        "demographic_label": "East Asian",
+        "comparison_age_display": "3-9"
+      }
+    },
+    {
+      "id": "fairface-052",
+      "dataset_id": "fairface",
+      "image_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/images/fairface-052.jpg",
+      "thumbnail_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/thumbs/fairface-052.jpg",
+      "image_url": "/static/datasets/fairface/images/fairface-052.jpg",
+      "thumbnail_url": "/static/datasets/fairface/thumbs/fairface-052.jpg",
+      "label_summary": "60-69 \u2022 Male \u2022 Latino_Hispanic",
+      "ground_truth": {
+        "dataset_type": "fairface",
+        "age_kind": "bucket",
+        "age_display": "60-69",
+        "age_value": "60-69",
+        "gender_display": "Male",
+        "gender_value": "male",
+        "demographic_label": "Latino_Hispanic",
+        "comparison_age_display": "60-69"
+      }
+    },
+    {
+      "id": "fairface-053",
+      "dataset_id": "fairface",
+      "image_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/images/fairface-053.jpg",
+      "thumbnail_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/thumbs/fairface-053.jpg",
+      "image_url": "/static/datasets/fairface/images/fairface-053.jpg",
+      "thumbnail_url": "/static/datasets/fairface/thumbs/fairface-053.jpg",
+      "label_summary": "50-59 \u2022 Male \u2022 Southeast Asian",
+      "ground_truth": {
+        "dataset_type": "fairface",
+        "age_kind": "bucket",
+        "age_display": "50-59",
+        "age_value": "50-59",
+        "gender_display": "Male",
+        "gender_value": "male",
+        "demographic_label": "Southeast Asian",
+        "comparison_age_display": "50-59"
+      }
+    },
+    {
+      "id": "fairface-054",
+      "dataset_id": "fairface",
+      "image_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/images/fairface-054.jpg",
+      "thumbnail_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/thumbs/fairface-054.jpg",
+      "image_url": "/static/datasets/fairface/images/fairface-054.jpg",
+      "thumbnail_url": "/static/datasets/fairface/thumbs/fairface-054.jpg",
+      "label_summary": "30-39 \u2022 Female \u2022 East Asian",
+      "ground_truth": {
+        "dataset_type": "fairface",
+        "age_kind": "bucket",
+        "age_display": "30-39",
+        "age_value": "30-39",
+        "gender_display": "Female",
+        "gender_value": "female",
+        "demographic_label": "East Asian",
+        "comparison_age_display": "30-39"
+      }
+    },
+    {
+      "id": "fairface-055",
+      "dataset_id": "fairface",
+      "image_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/images/fairface-055.jpg",
+      "thumbnail_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/thumbs/fairface-055.jpg",
+      "image_url": "/static/datasets/fairface/images/fairface-055.jpg",
+      "thumbnail_url": "/static/datasets/fairface/thumbs/fairface-055.jpg",
+      "label_summary": "30-39 \u2022 Male \u2022 Southeast Asian",
+      "ground_truth": {
+        "dataset_type": "fairface",
+        "age_kind": "bucket",
+        "age_display": "30-39",
+        "age_value": "30-39",
+        "gender_display": "Male",
+        "gender_value": "male",
+        "demographic_label": "Southeast Asian",
+        "comparison_age_display": "30-39"
+      }
+    },
+    {
+      "id": "fairface-056",
+      "dataset_id": "fairface",
+      "image_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/images/fairface-056.jpg",
+      "thumbnail_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/thumbs/fairface-056.jpg",
+      "image_url": "/static/datasets/fairface/images/fairface-056.jpg",
+      "thumbnail_url": "/static/datasets/fairface/thumbs/fairface-056.jpg",
+      "label_summary": "30-39 \u2022 Male \u2022 White",
+      "ground_truth": {
+        "dataset_type": "fairface",
+        "age_kind": "bucket",
+        "age_display": "30-39",
+        "age_value": "30-39",
+        "gender_display": "Male",
+        "gender_value": "male",
+        "demographic_label": "White",
+        "comparison_age_display": "30-39"
+      }
+    },
+    {
+      "id": "fairface-057",
+      "dataset_id": "fairface",
+      "image_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/images/fairface-057.jpg",
+      "thumbnail_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/thumbs/fairface-057.jpg",
+      "image_url": "/static/datasets/fairface/images/fairface-057.jpg",
+      "thumbnail_url": "/static/datasets/fairface/thumbs/fairface-057.jpg",
+      "label_summary": "20-29 \u2022 Male \u2022 Black",
+      "ground_truth": {
+        "dataset_type": "fairface",
+        "age_kind": "bucket",
+        "age_display": "20-29",
+        "age_value": "20-29",
+        "gender_display": "Male",
+        "gender_value": "male",
+        "demographic_label": "Black",
+        "comparison_age_display": "20-29"
+      }
+    },
+    {
+      "id": "fairface-058",
+      "dataset_id": "fairface",
+      "image_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/images/fairface-058.jpg",
+      "thumbnail_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/thumbs/fairface-058.jpg",
+      "image_url": "/static/datasets/fairface/images/fairface-058.jpg",
+      "thumbnail_url": "/static/datasets/fairface/thumbs/fairface-058.jpg",
+      "label_summary": "40-49 \u2022 Female \u2022 Latino_Hispanic",
+      "ground_truth": {
+        "dataset_type": "fairface",
+        "age_kind": "bucket",
+        "age_display": "40-49",
+        "age_value": "40-49",
+        "gender_display": "Female",
+        "gender_value": "female",
+        "demographic_label": "Latino_Hispanic",
+        "comparison_age_display": "40-49"
+      }
+    },
+    {
+      "id": "fairface-059",
+      "dataset_id": "fairface",
+      "image_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/images/fairface-059.jpg",
+      "thumbnail_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/thumbs/fairface-059.jpg",
+      "image_url": "/static/datasets/fairface/images/fairface-059.jpg",
+      "thumbnail_url": "/static/datasets/fairface/thumbs/fairface-059.jpg",
+      "label_summary": "10-19 \u2022 Female \u2022 Latino_Hispanic",
+      "ground_truth": {
+        "dataset_type": "fairface",
+        "age_kind": "bucket",
+        "age_display": "10-19",
+        "age_value": "10-19",
+        "gender_display": "Female",
+        "gender_value": "female",
+        "demographic_label": "Latino_Hispanic",
+        "comparison_age_display": "10-19"
+      }
+    },
+    {
+      "id": "fairface-060",
+      "dataset_id": "fairface",
+      "image_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/images/fairface-060.jpg",
+      "thumbnail_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/thumbs/fairface-060.jpg",
+      "image_url": "/static/datasets/fairface/images/fairface-060.jpg",
+      "thumbnail_url": "/static/datasets/fairface/thumbs/fairface-060.jpg",
+      "label_summary": "10-19 \u2022 Female \u2022 Latino_Hispanic",
+      "ground_truth": {
+        "dataset_type": "fairface",
+        "age_kind": "bucket",
+        "age_display": "10-19",
+        "age_value": "10-19",
+        "gender_display": "Female",
+        "gender_value": "female",
+        "demographic_label": "Latino_Hispanic",
+        "comparison_age_display": "10-19"
+      }
+    },
+    {
+      "id": "fairface-061",
+      "dataset_id": "fairface",
+      "image_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/images/fairface-061.jpg",
+      "thumbnail_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/thumbs/fairface-061.jpg",
+      "image_url": "/static/datasets/fairface/images/fairface-061.jpg",
+      "thumbnail_url": "/static/datasets/fairface/thumbs/fairface-061.jpg",
+      "label_summary": "3-9 \u2022 Male \u2022 East Asian",
+      "ground_truth": {
+        "dataset_type": "fairface",
+        "age_kind": "bucket",
+        "age_display": "3-9",
+        "age_value": "3-9",
+        "gender_display": "Male",
+        "gender_value": "male",
+        "demographic_label": "East Asian",
+        "comparison_age_display": "3-9"
+      }
+    },
+    {
+      "id": "fairface-062",
+      "dataset_id": "fairface",
+      "image_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/images/fairface-062.jpg",
+      "thumbnail_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/thumbs/fairface-062.jpg",
+      "image_url": "/static/datasets/fairface/images/fairface-062.jpg",
+      "thumbnail_url": "/static/datasets/fairface/thumbs/fairface-062.jpg",
+      "label_summary": "10-19 \u2022 Male \u2022 Indian",
+      "ground_truth": {
+        "dataset_type": "fairface",
+        "age_kind": "bucket",
+        "age_display": "10-19",
+        "age_value": "10-19",
+        "gender_display": "Male",
+        "gender_value": "male",
+        "demographic_label": "Indian",
+        "comparison_age_display": "10-19"
+      }
+    },
+    {
+      "id": "fairface-063",
+      "dataset_id": "fairface",
+      "image_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/images/fairface-063.jpg",
+      "thumbnail_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/thumbs/fairface-063.jpg",
+      "image_url": "/static/datasets/fairface/images/fairface-063.jpg",
+      "thumbnail_url": "/static/datasets/fairface/thumbs/fairface-063.jpg",
+      "label_summary": "40-49 \u2022 Male \u2022 Indian",
+      "ground_truth": {
+        "dataset_type": "fairface",
+        "age_kind": "bucket",
+        "age_display": "40-49",
+        "age_value": "40-49",
+        "gender_display": "Male",
+        "gender_value": "male",
+        "demographic_label": "Indian",
+        "comparison_age_display": "40-49"
+      }
+    },
+    {
+      "id": "fairface-064",
+      "dataset_id": "fairface",
+      "image_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/images/fairface-064.jpg",
+      "thumbnail_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/thumbs/fairface-064.jpg",
+      "image_url": "/static/datasets/fairface/images/fairface-064.jpg",
+      "thumbnail_url": "/static/datasets/fairface/thumbs/fairface-064.jpg",
+      "label_summary": "20-29 \u2022 Male \u2022 Southeast Asian",
+      "ground_truth": {
+        "dataset_type": "fairface",
+        "age_kind": "bucket",
+        "age_display": "20-29",
+        "age_value": "20-29",
+        "gender_display": "Male",
+        "gender_value": "male",
+        "demographic_label": "Southeast Asian",
+        "comparison_age_display": "20-29"
+      }
+    },
+    {
+      "id": "fairface-065",
+      "dataset_id": "fairface",
+      "image_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/images/fairface-065.jpg",
+      "thumbnail_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/thumbs/fairface-065.jpg",
+      "image_url": "/static/datasets/fairface/images/fairface-065.jpg",
+      "thumbnail_url": "/static/datasets/fairface/thumbs/fairface-065.jpg",
+      "label_summary": "30-39 \u2022 Male \u2022 East Asian",
+      "ground_truth": {
+        "dataset_type": "fairface",
+        "age_kind": "bucket",
+        "age_display": "30-39",
+        "age_value": "30-39",
+        "gender_display": "Male",
+        "gender_value": "male",
+        "demographic_label": "East Asian",
+        "comparison_age_display": "30-39"
+      }
+    },
+    {
+      "id": "fairface-066",
+      "dataset_id": "fairface",
+      "image_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/images/fairface-066.jpg",
+      "thumbnail_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/thumbs/fairface-066.jpg",
+      "image_url": "/static/datasets/fairface/images/fairface-066.jpg",
+      "thumbnail_url": "/static/datasets/fairface/thumbs/fairface-066.jpg",
+      "label_summary": "30-39 \u2022 Male \u2022 Latino_Hispanic",
+      "ground_truth": {
+        "dataset_type": "fairface",
+        "age_kind": "bucket",
+        "age_display": "30-39",
+        "age_value": "30-39",
+        "gender_display": "Male",
+        "gender_value": "male",
+        "demographic_label": "Latino_Hispanic",
+        "comparison_age_display": "30-39"
+      }
+    },
+    {
+      "id": "fairface-067",
+      "dataset_id": "fairface",
+      "image_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/images/fairface-067.jpg",
+      "thumbnail_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/thumbs/fairface-067.jpg",
+      "image_url": "/static/datasets/fairface/images/fairface-067.jpg",
+      "thumbnail_url": "/static/datasets/fairface/thumbs/fairface-067.jpg",
+      "label_summary": "10-19 \u2022 Female \u2022 Latino_Hispanic",
+      "ground_truth": {
+        "dataset_type": "fairface",
+        "age_kind": "bucket",
+        "age_display": "10-19",
+        "age_value": "10-19",
+        "gender_display": "Female",
+        "gender_value": "female",
+        "demographic_label": "Latino_Hispanic",
+        "comparison_age_display": "10-19"
+      }
+    },
+    {
+      "id": "fairface-068",
+      "dataset_id": "fairface",
+      "image_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/images/fairface-068.jpg",
+      "thumbnail_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/thumbs/fairface-068.jpg",
+      "image_url": "/static/datasets/fairface/images/fairface-068.jpg",
+      "thumbnail_url": "/static/datasets/fairface/thumbs/fairface-068.jpg",
+      "label_summary": "60-69 \u2022 Male \u2022 White",
+      "ground_truth": {
+        "dataset_type": "fairface",
+        "age_kind": "bucket",
+        "age_display": "60-69",
+        "age_value": "60-69",
+        "gender_display": "Male",
+        "gender_value": "male",
+        "demographic_label": "White",
+        "comparison_age_display": "60-69"
+      }
+    },
+    {
+      "id": "fairface-069",
+      "dataset_id": "fairface",
+      "image_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/images/fairface-069.jpg",
+      "thumbnail_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/thumbs/fairface-069.jpg",
+      "image_url": "/static/datasets/fairface/images/fairface-069.jpg",
+      "thumbnail_url": "/static/datasets/fairface/thumbs/fairface-069.jpg",
+      "label_summary": "50-59 \u2022 Male \u2022 Southeast Asian",
+      "ground_truth": {
+        "dataset_type": "fairface",
+        "age_kind": "bucket",
+        "age_display": "50-59",
+        "age_value": "50-59",
+        "gender_display": "Male",
+        "gender_value": "male",
+        "demographic_label": "Southeast Asian",
+        "comparison_age_display": "50-59"
+      }
+    },
+    {
+      "id": "fairface-070",
+      "dataset_id": "fairface",
+      "image_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/images/fairface-070.jpg",
+      "thumbnail_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/thumbs/fairface-070.jpg",
+      "image_url": "/static/datasets/fairface/images/fairface-070.jpg",
+      "thumbnail_url": "/static/datasets/fairface/thumbs/fairface-070.jpg",
+      "label_summary": "30-39 \u2022 Male \u2022 Indian",
+      "ground_truth": {
+        "dataset_type": "fairface",
+        "age_kind": "bucket",
+        "age_display": "30-39",
+        "age_value": "30-39",
+        "gender_display": "Male",
+        "gender_value": "male",
+        "demographic_label": "Indian",
+        "comparison_age_display": "30-39"
+      }
+    },
+    {
+      "id": "fairface-071",
+      "dataset_id": "fairface",
+      "image_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/images/fairface-071.jpg",
+      "thumbnail_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/thumbs/fairface-071.jpg",
+      "image_url": "/static/datasets/fairface/images/fairface-071.jpg",
+      "thumbnail_url": "/static/datasets/fairface/thumbs/fairface-071.jpg",
+      "label_summary": "60-69 \u2022 Female \u2022 Indian",
+      "ground_truth": {
+        "dataset_type": "fairface",
+        "age_kind": "bucket",
+        "age_display": "60-69",
+        "age_value": "60-69",
+        "gender_display": "Female",
+        "gender_value": "female",
+        "demographic_label": "Indian",
+        "comparison_age_display": "60-69"
+      }
+    },
+    {
+      "id": "fairface-072",
+      "dataset_id": "fairface",
+      "image_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/images/fairface-072.jpg",
+      "thumbnail_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/thumbs/fairface-072.jpg",
+      "image_url": "/static/datasets/fairface/images/fairface-072.jpg",
+      "thumbnail_url": "/static/datasets/fairface/thumbs/fairface-072.jpg",
+      "label_summary": "30-39 \u2022 Male \u2022 Latino_Hispanic",
+      "ground_truth": {
+        "dataset_type": "fairface",
+        "age_kind": "bucket",
+        "age_display": "30-39",
+        "age_value": "30-39",
+        "gender_display": "Male",
+        "gender_value": "male",
+        "demographic_label": "Latino_Hispanic",
+        "comparison_age_display": "30-39"
+      }
+    },
+    {
+      "id": "fairface-073",
+      "dataset_id": "fairface",
+      "image_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/images/fairface-073.jpg",
+      "thumbnail_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/thumbs/fairface-073.jpg",
+      "image_url": "/static/datasets/fairface/images/fairface-073.jpg",
+      "thumbnail_url": "/static/datasets/fairface/thumbs/fairface-073.jpg",
+      "label_summary": "30-39 \u2022 Female \u2022 Latino_Hispanic",
+      "ground_truth": {
+        "dataset_type": "fairface",
+        "age_kind": "bucket",
+        "age_display": "30-39",
+        "age_value": "30-39",
+        "gender_display": "Female",
+        "gender_value": "female",
+        "demographic_label": "Latino_Hispanic",
+        "comparison_age_display": "30-39"
+      }
+    },
+    {
+      "id": "fairface-074",
+      "dataset_id": "fairface",
+      "image_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/images/fairface-074.jpg",
+      "thumbnail_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/thumbs/fairface-074.jpg",
+      "image_url": "/static/datasets/fairface/images/fairface-074.jpg",
+      "thumbnail_url": "/static/datasets/fairface/thumbs/fairface-074.jpg",
+      "label_summary": "20-29 \u2022 Female \u2022 Southeast Asian",
+      "ground_truth": {
+        "dataset_type": "fairface",
+        "age_kind": "bucket",
+        "age_display": "20-29",
+        "age_value": "20-29",
+        "gender_display": "Female",
+        "gender_value": "female",
+        "demographic_label": "Southeast Asian",
+        "comparison_age_display": "20-29"
+      }
+    },
+    {
+      "id": "fairface-075",
+      "dataset_id": "fairface",
+      "image_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/images/fairface-075.jpg",
+      "thumbnail_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/thumbs/fairface-075.jpg",
+      "image_url": "/static/datasets/fairface/images/fairface-075.jpg",
+      "thumbnail_url": "/static/datasets/fairface/thumbs/fairface-075.jpg",
+      "label_summary": "30-39 \u2022 Male \u2022 Indian",
+      "ground_truth": {
+        "dataset_type": "fairface",
+        "age_kind": "bucket",
+        "age_display": "30-39",
+        "age_value": "30-39",
+        "gender_display": "Male",
+        "gender_value": "male",
+        "demographic_label": "Indian",
+        "comparison_age_display": "30-39"
+      }
+    },
+    {
+      "id": "fairface-076",
+      "dataset_id": "fairface",
+      "image_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/images/fairface-076.jpg",
+      "thumbnail_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/thumbs/fairface-076.jpg",
+      "image_url": "/static/datasets/fairface/images/fairface-076.jpg",
+      "thumbnail_url": "/static/datasets/fairface/thumbs/fairface-076.jpg",
+      "label_summary": "20-29 \u2022 Male \u2022 Southeast Asian",
+      "ground_truth": {
+        "dataset_type": "fairface",
+        "age_kind": "bucket",
+        "age_display": "20-29",
+        "age_value": "20-29",
+        "gender_display": "Male",
+        "gender_value": "male",
+        "demographic_label": "Southeast Asian",
+        "comparison_age_display": "20-29"
+      }
+    },
+    {
+      "id": "fairface-077",
+      "dataset_id": "fairface",
+      "image_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/images/fairface-077.jpg",
+      "thumbnail_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/thumbs/fairface-077.jpg",
+      "image_url": "/static/datasets/fairface/images/fairface-077.jpg",
+      "thumbnail_url": "/static/datasets/fairface/thumbs/fairface-077.jpg",
+      "label_summary": "50-59 \u2022 Female \u2022 Black",
+      "ground_truth": {
+        "dataset_type": "fairface",
+        "age_kind": "bucket",
+        "age_display": "50-59",
+        "age_value": "50-59",
+        "gender_display": "Female",
+        "gender_value": "female",
+        "demographic_label": "Black",
+        "comparison_age_display": "50-59"
+      }
+    },
+    {
+      "id": "fairface-078",
+      "dataset_id": "fairface",
+      "image_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/images/fairface-078.jpg",
+      "thumbnail_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/thumbs/fairface-078.jpg",
+      "image_url": "/static/datasets/fairface/images/fairface-078.jpg",
+      "thumbnail_url": "/static/datasets/fairface/thumbs/fairface-078.jpg",
+      "label_summary": "20-29 \u2022 Female \u2022 Middle Eastern",
+      "ground_truth": {
+        "dataset_type": "fairface",
+        "age_kind": "bucket",
+        "age_display": "20-29",
+        "age_value": "20-29",
+        "gender_display": "Female",
+        "gender_value": "female",
+        "demographic_label": "Middle Eastern",
+        "comparison_age_display": "20-29"
+      }
+    },
+    {
+      "id": "fairface-079",
+      "dataset_id": "fairface",
+      "image_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/images/fairface-079.jpg",
+      "thumbnail_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/thumbs/fairface-079.jpg",
+      "image_url": "/static/datasets/fairface/images/fairface-079.jpg",
+      "thumbnail_url": "/static/datasets/fairface/thumbs/fairface-079.jpg",
+      "label_summary": "40-49 \u2022 Male \u2022 Latino_Hispanic",
+      "ground_truth": {
+        "dataset_type": "fairface",
+        "age_kind": "bucket",
+        "age_display": "40-49",
+        "age_value": "40-49",
+        "gender_display": "Male",
+        "gender_value": "male",
+        "demographic_label": "Latino_Hispanic",
+        "comparison_age_display": "40-49"
+      }
+    },
+    {
+      "id": "fairface-080",
+      "dataset_id": "fairface",
+      "image_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/images/fairface-080.jpg",
+      "thumbnail_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/thumbs/fairface-080.jpg",
+      "image_url": "/static/datasets/fairface/images/fairface-080.jpg",
+      "thumbnail_url": "/static/datasets/fairface/thumbs/fairface-080.jpg",
+      "label_summary": "30-39 \u2022 Male \u2022 White",
+      "ground_truth": {
+        "dataset_type": "fairface",
+        "age_kind": "bucket",
+        "age_display": "30-39",
+        "age_value": "30-39",
+        "gender_display": "Male",
+        "gender_value": "male",
+        "demographic_label": "White",
+        "comparison_age_display": "30-39"
+      }
+    },
+    {
+      "id": "fairface-081",
+      "dataset_id": "fairface",
+      "image_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/images/fairface-081.jpg",
+      "thumbnail_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/thumbs/fairface-081.jpg",
+      "image_url": "/static/datasets/fairface/images/fairface-081.jpg",
+      "thumbnail_url": "/static/datasets/fairface/thumbs/fairface-081.jpg",
+      "label_summary": "30-39 \u2022 Female \u2022 Black",
+      "ground_truth": {
+        "dataset_type": "fairface",
+        "age_kind": "bucket",
+        "age_display": "30-39",
+        "age_value": "30-39",
+        "gender_display": "Female",
+        "gender_value": "female",
+        "demographic_label": "Black",
+        "comparison_age_display": "30-39"
+      }
+    },
+    {
+      "id": "fairface-082",
+      "dataset_id": "fairface",
+      "image_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/images/fairface-082.jpg",
+      "thumbnail_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/thumbs/fairface-082.jpg",
+      "image_url": "/static/datasets/fairface/images/fairface-082.jpg",
+      "thumbnail_url": "/static/datasets/fairface/thumbs/fairface-082.jpg",
+      "label_summary": "30-39 \u2022 Male \u2022 Indian",
+      "ground_truth": {
+        "dataset_type": "fairface",
+        "age_kind": "bucket",
+        "age_display": "30-39",
+        "age_value": "30-39",
+        "gender_display": "Male",
+        "gender_value": "male",
+        "demographic_label": "Indian",
+        "comparison_age_display": "30-39"
+      }
+    },
+    {
+      "id": "fairface-083",
+      "dataset_id": "fairface",
+      "image_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/images/fairface-083.jpg",
+      "thumbnail_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/thumbs/fairface-083.jpg",
+      "image_url": "/static/datasets/fairface/images/fairface-083.jpg",
+      "thumbnail_url": "/static/datasets/fairface/thumbs/fairface-083.jpg",
+      "label_summary": "40-49 \u2022 Male \u2022 White",
+      "ground_truth": {
+        "dataset_type": "fairface",
+        "age_kind": "bucket",
+        "age_display": "40-49",
+        "age_value": "40-49",
+        "gender_display": "Male",
+        "gender_value": "male",
+        "demographic_label": "White",
+        "comparison_age_display": "40-49"
+      }
+    },
+    {
+      "id": "fairface-084",
+      "dataset_id": "fairface",
+      "image_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/images/fairface-084.jpg",
+      "thumbnail_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/thumbs/fairface-084.jpg",
+      "image_url": "/static/datasets/fairface/images/fairface-084.jpg",
+      "thumbnail_url": "/static/datasets/fairface/thumbs/fairface-084.jpg",
+      "label_summary": "10-19 \u2022 Female \u2022 Black",
+      "ground_truth": {
+        "dataset_type": "fairface",
+        "age_kind": "bucket",
+        "age_display": "10-19",
+        "age_value": "10-19",
+        "gender_display": "Female",
+        "gender_value": "female",
+        "demographic_label": "Black",
+        "comparison_age_display": "10-19"
+      }
+    },
+    {
+      "id": "fairface-085",
+      "dataset_id": "fairface",
+      "image_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/images/fairface-085.jpg",
+      "thumbnail_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/thumbs/fairface-085.jpg",
+      "image_url": "/static/datasets/fairface/images/fairface-085.jpg",
+      "thumbnail_url": "/static/datasets/fairface/thumbs/fairface-085.jpg",
+      "label_summary": "20-29 \u2022 Female \u2022 White",
+      "ground_truth": {
+        "dataset_type": "fairface",
+        "age_kind": "bucket",
+        "age_display": "20-29",
+        "age_value": "20-29",
+        "gender_display": "Female",
+        "gender_value": "female",
+        "demographic_label": "White",
+        "comparison_age_display": "20-29"
+      }
+    },
+    {
+      "id": "fairface-086",
+      "dataset_id": "fairface",
+      "image_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/images/fairface-086.jpg",
+      "thumbnail_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/thumbs/fairface-086.jpg",
+      "image_url": "/static/datasets/fairface/images/fairface-086.jpg",
+      "thumbnail_url": "/static/datasets/fairface/thumbs/fairface-086.jpg",
+      "label_summary": "20-29 \u2022 Female \u2022 Black",
+      "ground_truth": {
+        "dataset_type": "fairface",
+        "age_kind": "bucket",
+        "age_display": "20-29",
+        "age_value": "20-29",
+        "gender_display": "Female",
+        "gender_value": "female",
+        "demographic_label": "Black",
+        "comparison_age_display": "20-29"
+      }
+    },
+    {
+      "id": "fairface-087",
+      "dataset_id": "fairface",
+      "image_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/images/fairface-087.jpg",
+      "thumbnail_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/thumbs/fairface-087.jpg",
+      "image_url": "/static/datasets/fairface/images/fairface-087.jpg",
+      "thumbnail_url": "/static/datasets/fairface/thumbs/fairface-087.jpg",
+      "label_summary": "20-29 \u2022 Male \u2022 Black",
+      "ground_truth": {
+        "dataset_type": "fairface",
+        "age_kind": "bucket",
+        "age_display": "20-29",
+        "age_value": "20-29",
+        "gender_display": "Male",
+        "gender_value": "male",
+        "demographic_label": "Black",
+        "comparison_age_display": "20-29"
+      }
+    },
+    {
+      "id": "fairface-088",
+      "dataset_id": "fairface",
+      "image_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/images/fairface-088.jpg",
+      "thumbnail_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/thumbs/fairface-088.jpg",
+      "image_url": "/static/datasets/fairface/images/fairface-088.jpg",
+      "thumbnail_url": "/static/datasets/fairface/thumbs/fairface-088.jpg",
+      "label_summary": "20-29 \u2022 Female \u2022 Southeast Asian",
+      "ground_truth": {
+        "dataset_type": "fairface",
+        "age_kind": "bucket",
+        "age_display": "20-29",
+        "age_value": "20-29",
+        "gender_display": "Female",
+        "gender_value": "female",
+        "demographic_label": "Southeast Asian",
+        "comparison_age_display": "20-29"
+      }
+    },
+    {
+      "id": "fairface-089",
+      "dataset_id": "fairface",
+      "image_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/images/fairface-089.jpg",
+      "thumbnail_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/thumbs/fairface-089.jpg",
+      "image_url": "/static/datasets/fairface/images/fairface-089.jpg",
+      "thumbnail_url": "/static/datasets/fairface/thumbs/fairface-089.jpg",
+      "label_summary": "40-49 \u2022 Male \u2022 Indian",
+      "ground_truth": {
+        "dataset_type": "fairface",
+        "age_kind": "bucket",
+        "age_display": "40-49",
+        "age_value": "40-49",
+        "gender_display": "Male",
+        "gender_value": "male",
+        "demographic_label": "Indian",
+        "comparison_age_display": "40-49"
+      }
+    },
+    {
+      "id": "fairface-090",
+      "dataset_id": "fairface",
+      "image_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/images/fairface-090.jpg",
+      "thumbnail_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/thumbs/fairface-090.jpg",
+      "image_url": "/static/datasets/fairface/images/fairface-090.jpg",
+      "thumbnail_url": "/static/datasets/fairface/thumbs/fairface-090.jpg",
+      "label_summary": "50-59 \u2022 Male \u2022 Indian",
+      "ground_truth": {
+        "dataset_type": "fairface",
+        "age_kind": "bucket",
+        "age_display": "50-59",
+        "age_value": "50-59",
+        "gender_display": "Male",
+        "gender_value": "male",
+        "demographic_label": "Indian",
+        "comparison_age_display": "50-59"
+      }
+    },
+    {
+      "id": "fairface-091",
+      "dataset_id": "fairface",
+      "image_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/images/fairface-091.jpg",
+      "thumbnail_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/thumbs/fairface-091.jpg",
+      "image_url": "/static/datasets/fairface/images/fairface-091.jpg",
+      "thumbnail_url": "/static/datasets/fairface/thumbs/fairface-091.jpg",
+      "label_summary": "30-39 \u2022 Male \u2022 Latino_Hispanic",
+      "ground_truth": {
+        "dataset_type": "fairface",
+        "age_kind": "bucket",
+        "age_display": "30-39",
+        "age_value": "30-39",
+        "gender_display": "Male",
+        "gender_value": "male",
+        "demographic_label": "Latino_Hispanic",
+        "comparison_age_display": "30-39"
+      }
+    },
+    {
+      "id": "fairface-092",
+      "dataset_id": "fairface",
+      "image_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/images/fairface-092.jpg",
+      "thumbnail_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/thumbs/fairface-092.jpg",
+      "image_url": "/static/datasets/fairface/images/fairface-092.jpg",
+      "thumbnail_url": "/static/datasets/fairface/thumbs/fairface-092.jpg",
+      "label_summary": "0-2 \u2022 Female \u2022 East Asian",
+      "ground_truth": {
+        "dataset_type": "fairface",
+        "age_kind": "bucket",
+        "age_display": "0-2",
+        "age_value": "0-2",
+        "gender_display": "Female",
+        "gender_value": "female",
+        "demographic_label": "East Asian",
+        "comparison_age_display": "0-2"
+      }
+    },
+    {
+      "id": "fairface-093",
+      "dataset_id": "fairface",
+      "image_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/images/fairface-093.jpg",
+      "thumbnail_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/thumbs/fairface-093.jpg",
+      "image_url": "/static/datasets/fairface/images/fairface-093.jpg",
+      "thumbnail_url": "/static/datasets/fairface/thumbs/fairface-093.jpg",
+      "label_summary": "30-39 \u2022 Female \u2022 White",
+      "ground_truth": {
+        "dataset_type": "fairface",
+        "age_kind": "bucket",
+        "age_display": "30-39",
+        "age_value": "30-39",
+        "gender_display": "Female",
+        "gender_value": "female",
+        "demographic_label": "White",
+        "comparison_age_display": "30-39"
+      }
+    },
+    {
+      "id": "fairface-094",
+      "dataset_id": "fairface",
+      "image_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/images/fairface-094.jpg",
+      "thumbnail_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/thumbs/fairface-094.jpg",
+      "image_url": "/static/datasets/fairface/images/fairface-094.jpg",
+      "thumbnail_url": "/static/datasets/fairface/thumbs/fairface-094.jpg",
+      "label_summary": "3-9 \u2022 Female \u2022 Latino_Hispanic",
+      "ground_truth": {
+        "dataset_type": "fairface",
+        "age_kind": "bucket",
+        "age_display": "3-9",
+        "age_value": "3-9",
+        "gender_display": "Female",
+        "gender_value": "female",
+        "demographic_label": "Latino_Hispanic",
+        "comparison_age_display": "3-9"
+      }
+    },
+    {
+      "id": "fairface-095",
+      "dataset_id": "fairface",
+      "image_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/images/fairface-095.jpg",
+      "thumbnail_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/thumbs/fairface-095.jpg",
+      "image_url": "/static/datasets/fairface/images/fairface-095.jpg",
+      "thumbnail_url": "/static/datasets/fairface/thumbs/fairface-095.jpg",
+      "label_summary": "20-29 \u2022 Male \u2022 Black",
+      "ground_truth": {
+        "dataset_type": "fairface",
+        "age_kind": "bucket",
+        "age_display": "20-29",
+        "age_value": "20-29",
+        "gender_display": "Male",
+        "gender_value": "male",
+        "demographic_label": "Black",
+        "comparison_age_display": "20-29"
+      }
+    },
+    {
+      "id": "fairface-096",
+      "dataset_id": "fairface",
+      "image_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/images/fairface-096.jpg",
+      "thumbnail_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/thumbs/fairface-096.jpg",
+      "image_url": "/static/datasets/fairface/images/fairface-096.jpg",
+      "thumbnail_url": "/static/datasets/fairface/thumbs/fairface-096.jpg",
+      "label_summary": "30-39 \u2022 Female \u2022 White",
+      "ground_truth": {
+        "dataset_type": "fairface",
+        "age_kind": "bucket",
+        "age_display": "30-39",
+        "age_value": "30-39",
+        "gender_display": "Female",
+        "gender_value": "female",
+        "demographic_label": "White",
+        "comparison_age_display": "30-39"
+      }
+    },
+    {
+      "id": "fairface-097",
+      "dataset_id": "fairface",
+      "image_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/images/fairface-097.jpg",
+      "thumbnail_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/thumbs/fairface-097.jpg",
+      "image_url": "/static/datasets/fairface/images/fairface-097.jpg",
+      "thumbnail_url": "/static/datasets/fairface/thumbs/fairface-097.jpg",
+      "label_summary": "30-39 \u2022 Female \u2022 White",
+      "ground_truth": {
+        "dataset_type": "fairface",
+        "age_kind": "bucket",
+        "age_display": "30-39",
+        "age_value": "30-39",
+        "gender_display": "Female",
+        "gender_value": "female",
+        "demographic_label": "White",
+        "comparison_age_display": "30-39"
+      }
+    },
+    {
+      "id": "fairface-098",
+      "dataset_id": "fairface",
+      "image_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/images/fairface-098.jpg",
+      "thumbnail_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/thumbs/fairface-098.jpg",
+      "image_url": "/static/datasets/fairface/images/fairface-098.jpg",
+      "thumbnail_url": "/static/datasets/fairface/thumbs/fairface-098.jpg",
+      "label_summary": "20-29 \u2022 Female \u2022 East Asian",
+      "ground_truth": {
+        "dataset_type": "fairface",
+        "age_kind": "bucket",
+        "age_display": "20-29",
+        "age_value": "20-29",
+        "gender_display": "Female",
+        "gender_value": "female",
+        "demographic_label": "East Asian",
+        "comparison_age_display": "20-29"
+      }
+    },
+    {
+      "id": "fairface-099",
+      "dataset_id": "fairface",
+      "image_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/images/fairface-099.jpg",
+      "thumbnail_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/thumbs/fairface-099.jpg",
+      "image_url": "/static/datasets/fairface/images/fairface-099.jpg",
+      "thumbnail_url": "/static/datasets/fairface/thumbs/fairface-099.jpg",
+      "label_summary": "30-39 \u2022 Male \u2022 White",
+      "ground_truth": {
+        "dataset_type": "fairface",
+        "age_kind": "bucket",
+        "age_display": "30-39",
+        "age_value": "30-39",
+        "gender_display": "Male",
+        "gender_value": "male",
+        "demographic_label": "White",
+        "comparison_age_display": "30-39"
+      }
+    },
+    {
+      "id": "fairface-100",
+      "dataset_id": "fairface",
+      "image_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/images/fairface-100.jpg",
+      "thumbnail_path": "/Users/chiru/Desktop/preference identification/modelbench/static/datasets/fairface/thumbs/fairface-100.jpg",
+      "image_url": "/static/datasets/fairface/images/fairface-100.jpg",
+      "thumbnail_url": "/static/datasets/fairface/thumbs/fairface-100.jpg",
+      "label_summary": "20-29 \u2022 Female \u2022 East Asian",
+      "ground_truth": {
+        "dataset_type": "fairface",
+        "age_kind": "bucket",
+        "age_display": "20-29",
+        "age_value": "20-29",
+        "gender_display": "Female",
+        "gender_value": "female",
+        "demographic_label": "East Asian",
+        "comparison_age_display": "20-29"
+      }
+    }
+  ]
+}

@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ModelBench</title>
+    <link rel="stylesheet" href="/static/assets/styles.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <header class="topbar">
+        <div>
+          <h1>ModelBench</h1>
+          <p>Inspect local benchmark images and compare SSR-Net predictions with dataset labels.</p>
+        </div>
+      </header>
+
+      <section class="layout">
+        <aside class="sidebar">
+          <section class="panel">
+            <h2>Model preset</h2>
+            <label class="field-label" for="modelSelect">Active model</label>
+            <select id="modelSelect"></select>
+            <p id="modelDescription" class="help-text"></p>
+          </section>
+
+          <section class="panel">
+            <div class="panel-header">
+              <h2>Datasets</h2>
+              <button id="reloadDatasets" class="secondary-button" type="button">Reload</button>
+            </div>
+            <div id="datasetCards" class="dataset-cards"></div>
+          </section>
+
+          <section class="panel image-panel">
+            <div class="panel-header">
+              <div>
+                <h2>Dataset images</h2>
+                <p id="datasetStatus" class="help-text">Select a dataset to browse local images.</p>
+              </div>
+            </div>
+            <div id="imageBrowser" class="image-browser"></div>
+          </section>
+        </aside>
+
+        <section class="main-column">
+          <section class="panel preview-panel">
+            <div class="panel-header">
+              <div>
+                <h2 id="previewTitle">Preview</h2>
+                <p id="previewSubtitle" class="help-text">Select a dataset image to run inference.</p>
+              </div>
+              <div id="statusPill" class="status-pill">Idle</div>
+            </div>
+
+            <div class="preview-stage">
+              <img id="previewImage" alt="Selected dataset image preview" />
+              <canvas id="overlayCanvas"></canvas>
+              <div id="emptyState" class="empty-state">
+                Choose a dataset, then select an image from the browser.
+              </div>
+            </div>
+
+            <div id="warningBox" class="warning-box" hidden></div>
+          </section>
+
+          <section class="panel comparison-panel">
+            <div class="panel-header">
+              <h2>Comparison</h2>
+              <p id="comparisonNote" class="help-text">Ground truth and predictions appear here.</p>
+            </div>
+            <div id="comparisonView" class="comparison-view empty-detail">
+              No dataset image selected.
+            </div>
+          </section>
+
+          <section class="panel">
+            <div class="panel-header">
+              <h2>Detected faces</h2>
+              <p id="detectionsSummary" class="help-text">No detections yet.</p>
+            </div>
+            <div id="detectionList" class="detection-list"></div>
+          </section>
+        </section>
+      </section>
+    </main>
+
+    <template id="datasetCardTemplate">
+      <button class="dataset-card" type="button">
+        <div class="dataset-card-copy">
+          <h3 class="dataset-name"></h3>
+          <p class="dataset-description"></p>
+          <p class="dataset-meta"></p>
+        </div>
+      </button>
+    </template>
+
+    <template id="imageTileTemplate">
+      <button class="image-tile" type="button">
+        <img class="image-thumb" alt="" />
+        <div class="image-copy">
+          <p class="image-label"></p>
+        </div>
+      </button>
+    </template>
+
+    <template id="detectionCardTemplate">
+      <button class="detection-card" type="button">
+        <img class="detection-thumb" alt="" />
+        <div class="detection-copy">
+          <div class="detection-topline">
+            <h3 class="detection-name"></h3>
+            <span class="confidence-chip"></span>
+          </div>
+          <p class="detection-meta"></p>
+        </div>
+      </button>
+    </template>
+
+    <script src="/static/assets/app.js" defer></script>
+  </body>
+</html>
